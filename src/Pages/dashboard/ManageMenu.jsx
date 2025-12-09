@@ -178,11 +178,98 @@ export default function ManageMenu() {
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{editingId ? t("editMenuItem") : t("addMenuItem")}</h2>
-              <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700"><X className="w-6 h-6" /></button>
+              <button onClick={() => { setShowModal(false); resetForm(); }} className="text-gray-500 hover:text-gray-700"><X className="w-6 h-6" /></button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Form fields same as before */}
+              {/* Label EN */}
+              <div>
+                <label className="block text-gray-700 dark:text-gray-200">{t("labelEN")}</label>
+                <input
+                  type="text"
+                  value={formData.label.en}
+                  onChange={(e) => setFormData({ ...formData, label: { ...formData.label, en: e.target.value } })}
+                  className="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600"
+                  required
+                />
+              </div>
+
+              {/* Label TL */}
+              <div>
+                <label className="block text-gray-700 dark:text-gray-200">{t("labelTL")}</label>
+                <input
+                  type="text"
+                  value={formData.label.tl}
+                  onChange={(e) => setFormData({ ...formData, label: { ...formData.label, tl: e.target.value } })}
+                  className="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600"
+                />
+              </div>
+
+              {/* URL */}
+              <div>
+                <label className="block text-gray-700 dark:text-gray-200">{t("url")}</label>
+                <input
+                  type="text"
+                  value={formData.url}
+                  onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                  className="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600"
+                />
+              </div>
+
+              {/* Type */}
+              <div>
+                <label className="block text-gray-700 dark:text-gray-200">{t("type")}</label>
+                <select
+                  value={formData.type}
+                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                  className="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600"
+                >
+                  <option value="page">{t("page")}</option>
+                  <option value="link">{t("link")}</option>
+                </select>
+              </div>
+
+              {/* Icon */}
+              <div>
+                <label className="block text-gray-700 dark:text-gray-200">{t("icon")}</label>
+                <input
+                  type="text"
+                  value={formData.icon}
+                  onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
+                  className="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600"
+                />
+              </div>
+
+              {/* Parent ID */}
+              <div>
+                <label className="block text-gray-700 dark:text-gray-200">{t("parentMenu")}</label>
+                <select
+                  value={formData.parent_id || ""}
+                  onChange={(e) => setFormData({ ...formData, parent_id: e.target.value || null })}
+                  className="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600"
+                >
+                  <option value="">{t("none")}</option>
+                  {menuItems.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.label.en}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex justify-end space-x-2">
+                <button
+                  type="button"
+                  onClick={() => { setShowModal(false); resetForm(); }}
+                  className="secondary-btn px-4 py-2"
+                >
+                  {t("cancel")}
+                </button>
+                <button type="submit" className="primary-btn px-4 py-2">
+                  {editingId ? t("update") : t("save")}
+                </button>
+              </div>
             </form>
           </div>
         </div>

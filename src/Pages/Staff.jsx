@@ -48,9 +48,9 @@ export default function Staff() {
         {staff.map((member) => (
           <div key={member.id} className="card text-center hover:shadow-lg transition-shadow">
             <div className="mb-4">
-              {member.image_path ? (
+              {member.image_url ? (
                 <img
-                  src={`${API_URL}/storage/${member.image_path}`}
+                  src={member.image_url}
                   alt={member.name[currentLang] || member.name.en}
                   className="w-32 h-32 rounded-full mx-auto object-cover"
                 />
@@ -62,16 +62,16 @@ export default function Staff() {
             </div>
 
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-              {member.name[currentLang] || member.name.en}
+              {member.name?.[currentLang] || member.name?.en || ""}
             </h3>
 
             <p className="text-primary-600 dark:text-primary-400 font-medium mb-4">
-              {member.role[currentLang] || member.role.en}
+              {member.role?.[currentLang] || member.role?.en || ""}
             </p>
 
             {member.bio && (
               <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                {member.bio[currentLang] || member.bio.en}
+                {member.bio?.[currentLang] || member.bio?.en || ""}
               </p>
             )}
 
@@ -79,7 +79,10 @@ export default function Staff() {
               {member.email && (
                 <div className="flex items-center justify-center text-gray-600 dark:text-gray-400">
                   <Mail className="w-4 h-4 mr-2" />
-                  <a href={`mailto:${member.email}`} className="hover:text-primary-600 dark:hover:text-primary-400">
+                  <a
+                    href={`mailto:${member.email}`}
+                    className="hover:text-primary-600 dark:hover:text-primary-400"
+                  >
                     {member.email}
                   </a>
                 </div>
@@ -87,7 +90,10 @@ export default function Staff() {
               {member.phone && (
                 <div className="flex items-center justify-center text-gray-600 dark:text-gray-400">
                   <Phone className="w-4 h-4 mr-2" />
-                  <a href={`tel:${member.phone}`} className="hover:text-primary-600 dark:hover:text-primary-400">
+                  <a
+                    href={`tel:${member.phone}`}
+                    className="hover:text-primary-600 dark:hover:text-primary-400"
+                  >
                     {member.phone}
                   </a>
                 </div>

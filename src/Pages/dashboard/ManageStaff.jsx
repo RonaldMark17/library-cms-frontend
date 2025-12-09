@@ -12,20 +12,22 @@ export default function ManageStaff() {
   const [staff, setStaff] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
+
+  // Only English fields
   const [formData, setFormData] = useState({
-    name: { en: "", tl: "" },
-    role: { en: "", tl: "" },
+    name: "",
+    role: "",
     email: "",
     phone: "",
-    bio: { en: "", tl: "" },
+    bio: "",
     image: null,
   });
+
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
     fetchStaff();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Fetch staff members
@@ -50,26 +52,20 @@ export default function ManageStaff() {
     e.preventDefault();
     const payload = new FormData();
 
-    payload.append("name[en]", formData.name.en);
-    payload.append("name[tl]", formData.name.tl || formData.name.en);
-    payload.append("role[en]", formData.role.en);
-    payload.append("role[tl]", formData.role.tl || formData.role.en);
-    payload.append("email", formData.email);
-    payload.append("phone", formData.phone);
-    if (formData.bio.en) {
-      payload.append("bio[en]", formData.bio.en);
-      payload.append("bio[tl]", formData.bio.tl || formData.bio.en);
-    }
+    payload.append("name", formData.name);
+    payload.append("role", formData.role);
+    if (formData.email) payload.append("email", formData.email);
+    if (formData.phone) payload.append("phone", formData.phone);
+    if (formData.bio) payload.append("bio", formData.bio);
     if (formData.image) payload.append("image", formData.image);
 
     try {
       const url = editingId
         ? `${API_URL}/staff-members/${editingId}`
         : `${API_URL}/staff-members`;
-      const method = editingId ? "POST" : "POST";
 
       const res = await fetch(url, {
-        method,
+        method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: payload,
       });
@@ -108,32 +104,13 @@ export default function ManageStaff() {
     }
   }
 
-  // Restore staff member
-  async function handleRestore(id) {
-    try {
-      const res = await fetch(`${API_URL}/staff-members/${id}/restore`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        setMessage(t("staffRestored"));
-        fetchStaff();
-      } else {
-        setMessage(t("errorRestoringStaff"));
-      }
-    } catch (error) {
-      console.error(error);
-      setMessage(t("errorRestoringStaff"));
-    }
-  }
-
   const resetForm = () => {
     setFormData({
-      name: { en: "", tl: "" },
-      role: { en: "", tl: "" },
+      name: "",
+      role: "",
       email: "",
       phone: "",
-      bio: { en: "", tl: "" },
+      bio: "",
       image: null,
     });
     setEditingId(null);
@@ -142,11 +119,11 @@ export default function ManageStaff() {
   const startEditing = (member) => {
     setEditingId(member.id);
     setFormData({
-      name: member.name || { en: "", tl: "" },
-      role: member.role || { en: "", tl: "" },
+      name: member.name.en,
+      role: member.role.en,
       email: member.email || "",
       phone: member.phone || "",
-      bio: member.bio || { en: "", tl: "" },
+      bio: member.bio?.en || "",
       image: null,
     });
     setShowModal(true);
@@ -190,9 +167,9 @@ export default function ManageStaff() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {staff.map((member) => (
           <div key={member.id} className="card">
-            {member.image_path && (
+            {member.image_url && (
               <img
-                src={`${API_URL}/storage/${member.image_path}`}
+                src={member.image_url}
                 alt={member.name.en}
                 className="w-full h-48 object-cover rounded-lg mb-4"
               />
@@ -200,8 +177,11 @@ export default function ManageStaff() {
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
               {member.name.en}
             </h3>
-            <p className="text-primary-600 dark:text-primary-400 mb-2">{member.role.en}</p>
+            <p className="text-primary-600 dark:text-primary-400 mb-2">
+              {member.role.en}
+            </p>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{member.email}</p>
+
             <div className="flex space-x-2">
               <button
                 onClick={() => startEditing(member)}
@@ -235,107 +215,68 @@ export default function ManageStaff() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Name */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {t("nameEn")} *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.name.en}
-                    onChange={(e) => setFormData({ ...formData, name: { ...formData.name, en: e.target.value } })}
-                    className="input-field"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {t("nameTl")}
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.name.tl}
-                    onChange={(e) => setFormData({ ...formData, name: { ...formData.name, tl: e.target.value } })}
-                    className="input-field"
-                  />
-                </div>
-              </div>
-
-              {/* Role */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {t("roleEn")} *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.role.en}
-                    onChange={(e) => setFormData({ ...formData, role: { ...formData.role, en: e.target.value } })}
-                    className="input-field"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {t("roleTl")}
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.role.tl}
-                    onChange={(e) => setFormData({ ...formData, role: { ...formData.role, tl: e.target.value } })}
-                    className="input-field"
-                  />
-                </div>
-              </div>
-
-              {/* Email and Phone */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {t("email")}
-                  </label>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="input-field"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {t("phone")}
-                  </label>
-                  <input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="input-field"
-                  />
-                </div>
-              </div>
-
-              {/* Bio */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t("bioEn")}</label>
-                <textarea
-                  value={formData.bio.en}
-                  onChange={(e) => setFormData({ ...formData, bio: { ...formData.bio, en: e.target.value } })}
-                  rows="3"
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t("nameEn")} *
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="input-field"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t("roleEn")} *
+                </label>
+                <input
+                  type="text"
+                  value={formData.role}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  className="input-field"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t("email")}
+                </label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="input-field"
                 />
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t("bioTl")}</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t("phone")}
+                </label>
+                <input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="input-field"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t("bioEn")}
+                </label>
                 <textarea
-                  value={formData.bio.tl}
-                  onChange={(e) => setFormData({ ...formData, bio: { ...formData.bio, tl: e.target.value } })}
+                  value={formData.bio}
+                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                   rows="3"
                   className="input-field"
                 />
               </div>
 
-              {/* Image */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center space-x-2">
                   <Upload className="w-4 h-4" />
@@ -349,10 +290,13 @@ export default function ManageStaff() {
                 />
               </div>
 
-              {/* Buttons */}
               <div className="flex space-x-3 pt-4">
-                <button type="submit" className="primary-btn flex-1">{editingId ? t("update") : t("create")}</button>
-                <button type="button" onClick={() => setShowModal(false)} className="secondary-btn">{t("cancel")}</button>
+                <button type="submit" className="primary-btn flex-1">
+                  {editingId ? t("update") : t("create")}
+                </button>
+                <button type="button" onClick={() => setShowModal(false)} className="secondary-btn">
+                  {t("cancel")}
+                </button>
               </div>
             </form>
           </div>

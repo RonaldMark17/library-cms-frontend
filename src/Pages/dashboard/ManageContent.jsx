@@ -9,12 +9,12 @@ export default function ManageContent() {
   const { t } = useTranslation();
   const [sections, setSections] = useState([]);
   const [editingSection, setEditingSection] = useState(null);
-  const [formData, setFormData] = useState({ content: { en: "", tl: "" } });
+  const [formData, setFormData] = useState({ content: { en: "" } });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
-  const API_URL = import.meta.env.VITE_API_URL; // <-- Make sure you set this in your .env
+  const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     fetchSections();
@@ -29,7 +29,7 @@ export default function ManageContent() {
       const data = await res.json();
       setSections(data);
     } catch (error) {
-      console.error("Error fetching sections:", error);
+      console.error("Error:", error);
       setMessage(t("errorFetchingSections"));
     } finally {
       setLoading(false);
@@ -38,21 +38,45 @@ export default function ManageContent() {
 
   const startEditing = (section) => {
     setEditingSection(section.id);
-    setFormData({ content: section.content || { en: "", tl: "" } });
+    setFormData({ content: { en: section.content.en || "" } });
   };
+
+  // ---- AUTO TRANSLATE TO TAGALOG ----
+  async function translateToTagalog(text) {
+    try {
+      const res = await fetch("https://libretranslate.com/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          q: text,
+          source: "en",
+          target: "tl",
+          format: "text",
+        }),
+      });
+
+      const data = await res.json();
+      return data.translatedText || "";
+    } catch (error) {
+      console.error("Translation error:", error);
+      return "";
+    }
+  }
 
   async function handleUpdate(sectionId) {
     setSaving(true);
     setMessage("");
 
     try {
+      const payload = { content: { en: formData.content.en } };
+
       const res = await fetch(`${API_URL}/content-sections/${sectionId}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       if (res.ok) {
@@ -73,16 +97,16 @@ export default function ManageContent() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 dark:border-primary-400"></div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-gray-900 dark:text-white">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <Link to="/dashboard" className="text-primary-600 dark:text-primary-400 hover:text-primary-700">
+          <Link to="/dashboard" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
             <ArrowLeft className="w-6 h-6" />
           </Link>
           <h1 className="title mb-0">{t("manageContent")}</h1>
@@ -90,18 +114,19 @@ export default function ManageContent() {
       </div>
 
       {message && (
-        <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg p-4">
-          <p className="text-primary-600 dark:text-primary-400">{message}</p>
+        <div className="bg-primary-50 dark:bg-primary-900 border border-primary-200 dark:border-primary-700 rounded-lg p-4">
+          <p className="text-primary-600 dark:text-white">{message}</p>
         </div>
       )}
 
       <div className="space-y-6">
         {sections.map((section) => (
-          <div key={section.id} className="card">
+          <div
+            key={section.id}
+            className="card bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4"
+          >
             <div className="flex justify-between items-start mb-4">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white capitalize">
-                {section.key}
-              </h2>
+              <h2 className="text-2xl font-bold capitalize text-gray-900 dark:text-white">{section.key}</h2>
               {editingSection !== section.id && (
                 <button onClick={() => startEditing(section)} className="primary-btn">
                   {t("edit")}
@@ -111,31 +136,20 @@ export default function ManageContent() {
 
             {editingSection === section.id ? (
               <div className="space-y-4">
+                {/* English ONLY */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Content (English)
+                  <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">
+                    Content (English Only)
                   </label>
                   <textarea
                     value={formData.content.en}
                     onChange={(e) =>
-                      setFormData({ ...formData, content: { ...formData.content, en: e.target.value } })
+                      setFormData({
+                        content: { en: e.target.value },
+                      })
                     }
                     rows="6"
-                    className="input-field"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Nilalaman (Tagalog)
-                  </label>
-                  <textarea
-                    value={formData.content.tl}
-                    onChange={(e) =>
-                      setFormData({ ...formData, content: { ...formData.content, tl: e.target.value } })
-                    }
-                    rows="6"
-                    className="input-field"
+                    className="input-field bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg p-2 w-full"
                   />
                 </div>
 
@@ -156,12 +170,13 @@ export default function ManageContent() {
             ) : (
               <div className="space-y-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">English:</p>
-                  <p className="text-gray-700 dark:text-gray-300">{section.content.en}</p>
+                  <p className="font-medium text-gray-900 dark:text-white">English:</p>
+                  <p className="text-gray-700 dark:text-white">{section.content.en}</p>
                 </div>
+
                 <div>
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Tagalog:</p>
-                  <p className="text-gray-700 dark:text-gray-300">{section.content.tl || t("notSet")}</p>
+                  <p className="font-medium text-gray-900 dark:text-white">Tagalog:</p>
+                  <p className="text-gray-700 dark:text-white">{section.content.tl || t("notSet")}</p>
                 </div>
               </div>
             )}
