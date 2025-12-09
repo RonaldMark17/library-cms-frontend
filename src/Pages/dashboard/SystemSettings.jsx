@@ -54,6 +54,12 @@ export default function SystemSettings() {
     }
   }
 
+  // Helper to check if subscriber is verified
+  function isVerified(subscriber) {
+    const v = subscriber.verified_at;
+    return v !== null && v !== undefined && v !== "" && v !== "null";
+  }
+
   // Handle settings form submit
   async function handleSubmit(e) {
     e.preventDefault();
@@ -185,7 +191,7 @@ export default function SystemSettings() {
                 >
                   <span className="text-gray-700 dark:text-gray-300 text-sm">{subscriber.email}</span>
                   <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {subscriber.verified_at ? "✓ Verified" : "Pending"}
+                    {isVerified(subscriber) ? "✓ Verified" : "Pending"}
                   </span>
                 </div>
               ))}
@@ -200,7 +206,7 @@ export default function SystemSettings() {
           <UsersIcon className="w-12 h-12 text-primary-600 dark:text-primary-400 mx-auto mb-3" />
           <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Active Subscribers</h3>
           <p className="text-3xl font-bold text-primary-600 dark:text-primary-400">
-            {subscribers.filter((s) => s.verified_at).length}
+            {subscribers.filter(isVerified).length}
           </p>
         </div>
 
@@ -208,7 +214,7 @@ export default function SystemSettings() {
           <Mail className="w-12 h-12 text-yellow-600 dark:text-yellow-400 mx-auto mb-3" />
           <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Pending Verification</h3>
           <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">
-            {subscribers.filter((s) => !s.verified_at).length}
+            {subscribers.filter((s) => !isVerified(s)).length}
           </p>
         </div>
 
@@ -219,7 +225,7 @@ export default function SystemSettings() {
           <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Engagement Rate</h3>
           <p className="text-3xl font-bold text-green-600 dark:text-green-400">
             {subscribers.length > 0
-              ? Math.round((subscribers.filter((s) => s.verified_at).length / subscribers.length) * 100)
+              ? Math.round((subscribers.filter(isVerified).length / subscribers.length) * 100)
               : 0}
             %
           </p>
