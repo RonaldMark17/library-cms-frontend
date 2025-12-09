@@ -11,8 +11,20 @@ export default function Home() {
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Carousel state
+  const carouselImages = ["/1.jpg", "/2.png"];
+  const [currentImage, setCurrentImage] = useState(0);
+
   useEffect(() => {
     fetchHomeData();
+  }, []);
+
+  useEffect(() => {
+    // Auto-slide every 5s
+    const interval = setInterval(() => {
+      setCurrentImage((prev) => (prev + 1) % carouselImages.length);
+    }, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   async function fetchHomeData() {
@@ -51,10 +63,18 @@ export default function Home() {
 
   return (
     <div className="space-y-12">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-primary-600 to-primary-800 rounded-2xl overflow-hidden">
-        <div className="absolute inset-0 bg-black opacity-10"></div>
-        <div className="relative px-8 py-16 md:py-24 text-center">
+      {/* Hero Section with Carousel */}
+      <section
+        className="relative rounded-2xl overflow-hidden h-[500px] md:h-[600px]"
+        style={{
+          backgroundImage: `url(${carouselImages[currentImage]})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          transition: "background-image 1s ease-in-out",
+        }}
+      >
+        <div className="absolute inset-0 bg-black opacity-20"></div>
+        <div className="relative px-8 py-16 md:py-24 text-center flex flex-col justify-center h-full">
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
             {t("welcome")} to LibroSys
           </h1>
