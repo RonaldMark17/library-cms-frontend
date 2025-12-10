@@ -13,7 +13,6 @@ export default function ManageStaff() {
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
-  // Only English fields
   const [formData, setFormData] = useState({
     name: "",
     role: "",
@@ -41,7 +40,7 @@ export default function ManageStaff() {
       setStaff(data);
     } catch (error) {
       console.error(error);
-      setMessage(t("errorFetchingStaff"));
+      setMessage(t("Error Fetching Staff"));
     } finally {
       setLoading(false);
     }
@@ -59,28 +58,35 @@ export default function ManageStaff() {
     if (formData.bio) payload.append("bio", formData.bio);
     if (formData.image) payload.append("image", formData.image);
 
-    try {
-      const url = editingId
-        ? `${API_URL}/staff-members/${editingId}`
-        : `${API_URL}/staff-members`;
+    let url = `${API_URL}/staff-members`;
+    let method = "POST";
 
+    if (editingId) {
+      url = `${API_URL}/staff-members/${editingId}`;
+      // Laravel PUT with FormData workaround
+      payload.append("_method", "PUT");
+    }
+
+    try {
       const res = await fetch(url, {
-        method: "POST",
+        method: "POST", // Always POST when using _method for PUT
         headers: { Authorization: `Bearer ${token}` },
         body: payload,
       });
 
       if (res.ok) {
-        setMessage(editingId ? t("staffUpdated") : t("staffCreated"));
+        setMessage(editingId ? t("Staff Updated") : t("Staff Created"));
         setShowModal(false);
         resetForm();
         fetchStaff();
       } else {
-        setMessage(t("errorSavingStaff"));
+        const errData = await res.json();
+        console.error(errData);
+        setMessage(t("Error Saving Staff"));
       }
     } catch (error) {
       console.error(error);
-      setMessage(t("errorSavingStaff"));
+      setMessage(t("Error Saving Staff"));
     }
   }
 
@@ -152,7 +158,7 @@ export default function ManageStaff() {
           className="primary-btn flex items-center space-x-2"
         >
           <Plus className="w-5 h-5" />
-          <span>{t("addStaff")}</span>
+          <span>{t("Add Staff")}</span>
         </button>
       </div>
 
@@ -207,7 +213,7 @@ export default function ManageStaff() {
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                {editingId ? t("editStaff") : t("addStaff")}
+                {editingId ? t("Edit Staff") : t("Add Staff")}
               </h2>
               <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
                 <X className="w-6 h-6" />
@@ -217,7 +223,7 @@ export default function ManageStaff() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t("nameEn")} *
+                  {t("Name")} *
                 </label>
                 <input
                   type="text"
@@ -230,7 +236,7 @@ export default function ManageStaff() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t("roleEn")} *
+                  {t("Role")} *
                 </label>
                 <input
                   type="text"
@@ -255,7 +261,7 @@ export default function ManageStaff() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t("phone")}
+                  {t("Phone")}
                 </label>
                 <input
                   type="tel"
@@ -267,7 +273,7 @@ export default function ManageStaff() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t("bioEn")}
+                  {t("Bio")}
                 </label>
                 <textarea
                   value={formData.bio}
@@ -280,7 +286,7 @@ export default function ManageStaff() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center space-x-2">
                   <Upload className="w-4 h-4" />
-                  <span>{t("image")}</span>
+                  <span>{t("Image")}</span>
                 </label>
                 <input
                   type="file"

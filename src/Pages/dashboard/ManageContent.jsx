@@ -30,7 +30,7 @@ export default function ManageContent() {
       setSections(data);
     } catch (error) {
       console.error("Error:", error);
-      setMessage(t("errorFetchingSections"));
+      setMessage(t("Error Fetching Sections"));
     } finally {
       setLoading(false);
     }
@@ -41,7 +41,6 @@ export default function ManageContent() {
     setFormData({ content: { en: section.content.en || "" } });
   };
 
-  // ---- AUTO TRANSLATE TO TAGALOG ----
   async function translateToTagalog(text) {
     try {
       const res = await fetch("https://libretranslate.com/translate", {
@@ -80,15 +79,15 @@ export default function ManageContent() {
       });
 
       if (res.ok) {
-        setMessage(t("contentUpdated"));
+        setMessage(t("Content Updated"));
         setEditingSection(null);
         fetchSections();
       } else {
-        setMessage(t("errorUpdatingContent"));
+        setMessage(t("Error Updating Content"));
       }
     } catch (error) {
       console.error(error);
-      setMessage(t("errorUpdatingContent"));
+      setMessage(t("Error Updating Content"));
     } finally {
       setSaving(false);
     }
@@ -136,10 +135,9 @@ export default function ManageContent() {
 
             {editingSection === section.id ? (
               <div className="space-y-4">
-                {/* English ONLY */}
                 <div>
                   <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">
-                    Content (English Only)
+                    {t("contentEnglishOnly")}
                   </label>
                   <textarea
                     value={formData.content.en}
@@ -170,12 +168,12 @@ export default function ManageContent() {
             ) : (
               <div className="space-y-4">
                 <div>
-                  <p className="font-medium text-gray-900 dark:text-white">English:</p>
+                  <p className="font-medium text-gray-900 dark:text-white">{t("english")}:</p>
                   <p className="text-gray-700 dark:text-white">{section.content.en}</p>
                 </div>
 
                 <div>
-                  <p className="font-medium text-gray-900 dark:text-white">Tagalog:</p>
+                  <p className="font-medium text-gray-900 dark:text-white">{t("tagalog")}:</p>
                   <p className="text-gray-700 dark:text-white">{section.content.tl || t("notSet")}</p>
                 </div>
               </div>

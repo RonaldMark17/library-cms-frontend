@@ -20,7 +20,6 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    // Auto-slide every 5s
     const interval = setInterval(() => {
       setCurrentImage((prev) => (prev + 1) % carouselImages.length);
     }, 5000);
@@ -37,12 +36,15 @@ export default function Home() {
       const sectionsData = await sectionsRes.json();
       const announcementsData = await announcementsRes.json();
 
+      // Format content sections
       const sections = {};
       sectionsData.forEach((section) => {
         sections[section.key] = section.content;
       });
 
       setContentSections(sections);
+
+      // Ensure announcements array exists
       setAnnouncements(announcementsData.data || announcementsData);
     } catch (error) {
       console.error("Error fetching home data:", error);
@@ -131,46 +133,50 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {announcements.map((announcement) => (
-            <div key={announcement.id} className="card hover:shadow-lg transition-shadow">
-              {announcement.image_path && (
+          {announcements.map((announcement) => {
+            const imageSrc =
+              announcement.image_url ||
+              (announcement.image_path ? `${API_URL}/storage/${announcement.image_path}` : '/placeholder.jpg');
+
+            return (
+              <div key={announcement.id} className="card hover:shadow-lg transition-shadow">
                 <img
-                  src={`${API_URL}/storage/${announcement.image_path}`}
+                  src={imageSrc}
                   alt={announcement.title[currentLang] || announcement.title.en}
                   className="w-full h-48 object-cover rounded-lg mb-4"
                 />
-              )}
-              <div className="flex items-center space-x-2 mb-2">
-                <span
-                  className={`badge ${
-                    announcement.priority === "high"
-                      ? "badge-danger"
-                      : announcement.priority === "medium"
-                      ? "badge-warning"
-                      : "badge-success"
-                  }`}
+                <div className="flex items-center space-x-2 mb-2">
+                  <span
+                    className={`badge ${
+                      announcement.priority === "high"
+                        ? "badge-danger"
+                        : announcement.priority === "medium"
+                        ? "badge-warning"
+                        : "badge-success"
+                    }`}
+                  >
+                    {announcement.priority}
+                  </span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    {new Date(announcement.published_at).toLocaleDateString()}
+                  </span>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  {announcement.title[currentLang] || announcement.title.en}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 line-clamp-3 mb-4">
+                  {announcement.content[currentLang] || announcement.content.en}
+                </p>
+                <Link
+                  to={`/announcements/${announcement.id}`}
+                  className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium flex items-center"
                 >
-                  {announcement.priority}
-                </span>
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  {new Date(announcement.published_at).toLocaleDateString()}
-                </span>
+                  {t("readMore")}
+                  <ArrowRight className="w-4 h-4 ml-1" />
+                </Link>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                {announcement.title[currentLang] || announcement.title.en}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 line-clamp-3 mb-4">
-                {announcement.content[currentLang] || announcement.content.en}
-              </p>
-              <Link
-                to={`/announcements/${announcement.id}`}
-                className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium flex items-center"
-              >
-                {t("readMore")}
-                <ArrowRight className="w-4 h-4 ml-1" />
-              </Link>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 

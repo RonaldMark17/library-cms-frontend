@@ -1,21 +1,15 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { useContext, useState, useRef, useEffect } from "react";
+import { useContext, useState, useEffect, useRef } from "react";
 import { AppContext } from "../Context/AppContext";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "../Components/LanguageSwitcher";
 import ThemeToggle from "../Components/ThemeToggle";
-import {
-  Menu,
-  X,
-  BookOpen,
-  Search as SearchIcon,
-} from "lucide-react";
+import { Menu, X, BookOpen, Search as SearchIcon } from "lucide-react";
 import LoadingSpinner from "../Components/LoadingSpinner";
 
-// Backend API URL from environment
 const API_URL = import.meta.env.VITE_API_URL;
 
-// Search icon-only component
+// Search component
 function SearchBarIcon({ onSearch, isMobile }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -107,7 +101,7 @@ function SearchBarIcon({ onSearch, isMobile }) {
   );
 }
 
-// User dropdown component
+// User dropdown
 function UserDropdown({ user, t, handleLogout }) {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef();
@@ -123,11 +117,7 @@ function UserDropdown({ user, t, handleLogout }) {
   }, []);
 
   const activeClass = ({ isActive }) =>
-    `px-4 py-2 text-sm rounded ${
-      isActive
-        ? "bg-primary-500 text-white"
-        : "text-gray-700 dark:text-gray-200"
-    } hover:bg-gray-100 dark:hover:bg-gray-700`;
+    `px-4 py-2 text-sm rounded ${isActive ? "bg-primary-500 text-white" : "text-gray-700 dark:text-gray-200"} hover:bg-gray-100 dark:hover:bg-gray-700`;
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -135,9 +125,7 @@ function UserDropdown({ user, t, handleLogout }) {
         onClick={() => setOpen(!open)}
         className="flex items-center space-x-1 px-3 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition"
       >
-        <span className="text-sm text-gray-600 dark:text-gray-400 font-medium">
-          {user.name}
-        </span>
+        <span className="text-sm text-gray-600 dark:text-gray-400 font-medium">{user.name}</span>
       </button>
 
       {open && (
@@ -148,9 +136,7 @@ function UserDropdown({ user, t, handleLogout }) {
                 {t("dashboard")}
               </NavLink>
             )}
-            <NavLink to="/settings" className={activeClass}>
-              {t("settings")}
-            </NavLink>
+            <NavLink to="/settings" className={activeClass}>{t("settings")}</NavLink>
             <form onSubmit={handleLogout}>
               <button
                 type="submit"
@@ -171,7 +157,29 @@ export default function Layout() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [menuItems, setMenuItems] = useState([]);
+  const [menuLoading, setMenuLoading] = useState(true);
 
+  // Fetch menu items
+  useEffect(() => {
+    async function fetchMenu() {
+      try {
+        const res = await fetch(`${API_URL}/menu-items`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error("Failed to fetch menu");
+        const data = await res.json();
+        setMenuItems(data);
+      } catch (err) {
+        console.error("Error fetching menu:", err);
+      } finally {
+        setMenuLoading(false);
+      }
+    }
+    if (token) fetchMenu();
+  }, [token]);
+
+  // Logout
   async function handleLogout(e) {
     e.preventDefault();
     try {
@@ -179,28 +187,49 @@ export default function Layout() {
         headers: { Authorization: `Bearer ${token}` },
         method: "POST",
       });
-
       if (res.ok) {
         setUser(null);
         setToken(null);
         localStorage.removeItem("token");
         navigate("/login");
-      } else {
-        console.error("Logout failed");
       }
     } catch (err) {
       console.error("Logout error:", err);
     }
   }
 
-  const handleSearch = (query) => {
-    if (query) navigate(`/search?q=${encodeURIComponent(query)}`);
-  };
-
   if (loading) return <LoadingSpinner />;
 
   const activeClass = ({ isActive }) =>
     `nav-link px-3 py-1 rounded ${isActive ? "bg-primary-500 text-white" : ""}`;
+
+  const renderMenu = (items, parentId = null) =>
+    items
+      .filter((item) => item.parent_id === parentId)
+      .map((item) => {
+        const children = renderMenu(items, item.id);
+        if (children.length > 0) {
+          return (
+            <div key={item.id} className="relative group">
+              <NavLink to={item.url || "#"} className={activeClass}>
+                {item.label.en}
+              </NavLink>
+              <div className="absolute hidden group-hover:block bg-white dark:bg-gray-800 shadow-lg rounded mt-1">
+                {children}
+              </div>
+            </div>
+          );
+        }
+        return (
+          <NavLink key={item.id} to={item.url || "#"} className={activeClass}>
+            {item.label.en}
+          </NavLink>
+        );
+      });
+
+  const handleSearch = (query) => {
+    if (query) navigate(`/search?q=${encodeURIComponent(query)}`);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
@@ -211,30 +240,12 @@ export default function Layout() {
             {/* Logo */}
             <NavLink to="/" className="flex items-center space-x-2">
               <BookOpen className="w-8 h-8 text-primary-600 dark:text-primary-400" />
-              <span className="text-xl font-bold text-gray-900 dark:text-white">
-                LibroSys
-              </span>
+              <span className="text-xl font-bold text-gray-900 dark:text-white">LibroSys</span>
             </NavLink>
 
-            {/* Desktop Navigation */}
+            {/* Desktop menu */}
             <div className="hidden md:flex items-center space-x-4">
-              <NavLink to="/" className={activeClass}>
-                {t("home")}
-              </NavLink>
-              <NavLink to="/about" className={activeClass}>
-                {t("about")}
-              </NavLink>
-              <NavLink to="/staff" className={activeClass}>
-                {t("staff")}
-              </NavLink>
-              <NavLink to="/announcements" className={activeClass}>
-                {t("announcements")}
-              </NavLink>
-              <NavLink to="/resources" className={activeClass}>
-                {t("resources")}
-              </NavLink>
-
-              {/* Search icon */}
+              {menuLoading ? <LoadingSpinner /> : renderMenu(menuItems)}
               <div className="ml-4">
                 <SearchBarIcon onSearch={handleSearch} />
               </div>
@@ -244,11 +255,8 @@ export default function Layout() {
             <div className="hidden md:flex items-center space-x-3">
               <ThemeToggle />
               <LanguageSwitcher />
-
               {!user ? (
-                <NavLink to="/login" className="primary-btn">
-                  {t("login")}
-                </NavLink>
+                <NavLink to="/login" className="primary-btn">{t("login")}</NavLink>
               ) : (
                 <UserDropdown user={user} t={t} handleLogout={handleLogout} />
               )}
@@ -263,50 +271,22 @@ export default function Layout() {
             </button>
           </div>
 
-          {/* Mobile Menu */}
+          {/* Mobile menu */}
           {mobileMenuOpen && (
             <div className="md:hidden py-4 border-t border-gray-200 dark:border-gray-700">
               <div className="flex flex-col space-y-3">
-                <NavLink to="/" onClick={() => setMobileMenuOpen(false)} className={activeClass}>
-                  {t("home")}
-                </NavLink>
-                <NavLink to="/about" onClick={() => setMobileMenuOpen(false)} className={activeClass}>
-                  {t("about")}
-                </NavLink>
-                <NavLink to="/staff" onClick={() => setMobileMenuOpen(false)} className={activeClass}>
-                  {t("staff")}
-                </NavLink>
-                <NavLink to="/announcements" onClick={() => setMobileMenuOpen(false)} className={activeClass}>
-                  {t("announcements")}
-                </NavLink>
-                <NavLink to="/resources" onClick={() => setMobileMenuOpen(false)} className={activeClass}>
-                  {t("resources")}
-                </NavLink>
-
-                {/* Mobile search */}
+                {menuLoading ? <LoadingSpinner /> : renderMenu(menuItems)}
                 <div className="pt-2">
                   <SearchBarIcon onSearch={handleSearch} isMobile />
                 </div>
-
-                {user && (user.role === "admin" || user.role === "librarian") && (
-                  <NavLink to="/dashboard" onClick={() => setMobileMenuOpen(false)} className={activeClass}>
-                    {t("dashboard")}
-                  </NavLink>
-                )}
-
                 <div className="flex items-center space-x-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                   <ThemeToggle />
                   <LanguageSwitcher />
                 </div>
-
                 {!user ? (
                   <>
-                    <NavLink to="/login" className="primary-btn text-center" onClick={() => setMobileMenuOpen(false)}>
-                      {t("login")}
-                    </NavLink>
-                    <NavLink to="/register" className="secondary-btn text-center" onClick={() => setMobileMenuOpen(false)}>
-                      {t("register")}
-                    </NavLink>
+                    <NavLink to="/login" className="primary-btn text-center" onClick={() => setMobileMenuOpen(false)}>{t("login")}</NavLink>
+                    <NavLink to="/register" className="secondary-btn text-center" onClick={() => setMobileMenuOpen(false)}>{t("register")}</NavLink>
                   </>
                 ) : (
                   <form onSubmit={handleLogout} className="pt-3">
@@ -319,9 +299,9 @@ export default function Layout() {
         </nav>
       </header>
 
-      {/* Main Content */}
+      {/* Main content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Outlet />
+        <Outlet context={{ menuItems, setMenuItems }} />
       </main>
 
       {/* Footer */}
@@ -330,18 +310,11 @@ export default function Layout() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">LibroSys</h3>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">
-                Empowering communities through knowledge and innovation.
-              </p>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">Empowering communities through knowledge and innovation.</p>
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Links</h3>
-              <div className="flex flex-col space-y-2">
-                <NavLink to="/about" className={activeClass}>{t("about")}</NavLink>
-                <NavLink to="/staff" className={activeClass}>{t("staff")}</NavLink>
-                <NavLink to="/announcements" className={activeClass}>{t("announcements")}</NavLink>
-                <NavLink to="/resources" className={activeClass}>{t("resources")}</NavLink>
-              </div>
+              <div className="flex flex-col space-y-2">{menuLoading ? <LoadingSpinner /> : renderMenu(menuItems)}</div>
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Contact</h3>

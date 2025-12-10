@@ -1,56 +1,35 @@
-import { useState, useEffect, useContext } from "react";
-import { AppContext } from "../../Context/AppContext";
+import { useState, useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Plus, Edit, Trash2, X, MoveUp, MoveDown } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useOutletContext } from "react-router-dom";
+import { AppContext } from "../../Context/AppContext";
 
 export default function ManageMenu() {
   const { token } = useContext(AppContext);
   const { t } = useTranslation();
-  const [menuItems, setMenuItems] = useState([]);
+  const { menuItems, setMenuItems } = useOutletContext(); // ← Use Layout's state
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
-    label: { en: "", tl: "" },
+    label: { en: "" },
     url: "",
     type: "page",
     icon: "",
     parent_id: null,
   });
-  const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  useEffect(() => {
-    fetchMenuItems();
-  }, []);
-
-  async function fetchMenuItems() {
-    try {
-      const res = await fetch(`${API_URL}/menu-items`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error("Failed to fetch menu items");
-      const data = await res.json();
-      setMenuItems(data);
-    } catch (error) {
-      console.error("Error fetching menu items:", error);
-      setMessage(t("errorFetchingMenu"));
-    } finally {
-      setLoading(false);
-    }
-  }
-
   const resetForm = () => {
-    setFormData({ label: { en: "", tl: "" }, url: "", type: "page", icon: "", parent_id: null });
+    setFormData({ label: { en: "" }, url: "", type: "page", icon: "", parent_id: null });
     setEditingId(null);
   };
 
   const startEditing = (item) => {
     setEditingId(item.id);
     setFormData({
-      label: item.label || { en: "", tl: "" },
+      label: item.label || { en: "" },
       url: item.url || "",
       type: item.type || "page",
       icon: item.icon || "",
@@ -59,21 +38,47 @@ export default function ManageMenu() {
     setShowModal(true);
   };
 
+  async function translateToTagalog(text) {
+    try {
+      const res = await fetch(`${API_URL}/translate`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ text, target: "tl" }),
+      });
+      if (!res.ok) return "";
+      const data = await res.json();
+      return data.translated_text || "";
+    } catch (error) {
+      console.error("Translation error:", error);
+      return "";
+    }
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     try {
+      const tlLabel = await translateToTagalog(formData.label.en);
+      const payload = { ...formData, label: { en: formData.label.en, tl: tlLabel } };
+
       const url = editingId ? `${API_URL}/menu-items/${editingId}` : `${API_URL}/menu-items`;
       const method = editingId ? "PUT" : "POST";
       const res = await fetch(url, {
         method,
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
+
       if (res.ok) {
-        setMessage(editingId ? t("menuUpdated") : t("menuCreated"));
+        const savedItem = await res.json();
+        if (editingId) {
+          setMenuItems(menuItems.map(item => item.id === editingId ? savedItem : item));
+          setMessage(t("menuUpdated"));
+        } else {
+          setMenuItems([...menuItems, savedItem]);
+          setMessage(t("menuCreated"));
+        }
         setShowModal(false);
         resetForm();
-        fetchMenuItems();
       } else {
         setMessage(t("errorSavingMenu"));
       }
@@ -88,8 +93,8 @@ export default function ManageMenu() {
     try {
       const res = await fetch(`${API_URL}/menu-items/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
       if (res.ok) {
+        setMenuItems(menuItems.filter(item => item.id !== id));
         setMessage(t("menuDeleted"));
-        fetchMenuItems();
       } else {
         setMessage(t("errorDeletingMenu"));
       }
@@ -107,8 +112,8 @@ export default function ManageMenu() {
         body: JSON.stringify({ items }),
       });
       if (res.ok) {
+        setMenuItems(items.map(orderItem => menuItems.find(item => item.id === orderItem.id)));
         setMessage(t("menuReordered"));
-        fetchMenuItems();
       }
     } catch (error) {
       console.error(error);
@@ -125,17 +130,8 @@ export default function ManageMenu() {
     handleReorder(reorderData);
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <Link to="/dashboard" className="text-primary-600 dark:text-primary-400">
@@ -149,10 +145,8 @@ export default function ManageMenu() {
         </button>
       </div>
 
-      {/* Messages */}
       {message && <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg p-4"><p className="text-primary-600 dark:text-primary-400">{message}</p></div>}
 
-      {/* Menu Items */}
       <div className="card">
         <div className="space-y-2">
           {menuItems.map((item, index) => (
@@ -172,7 +166,6 @@ export default function ManageMenu() {
         </div>
       </div>
 
-      {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl">
@@ -182,30 +175,17 @@ export default function ManageMenu() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Label EN */}
               <div>
                 <label className="block text-gray-700 dark:text-gray-200">{t("labelEN")}</label>
                 <input
                   type="text"
                   value={formData.label.en}
-                  onChange={(e) => setFormData({ ...formData, label: { ...formData.label, en: e.target.value } })}
+                  onChange={(e) => setFormData({ ...formData, label: { en: e.target.value } })}
                   className="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600"
                   required
                 />
               </div>
 
-              {/* Label TL */}
-              <div>
-                <label className="block text-gray-700 dark:text-gray-200">{t("labelTL")}</label>
-                <input
-                  type="text"
-                  value={formData.label.tl}
-                  onChange={(e) => setFormData({ ...formData, label: { ...formData.label, tl: e.target.value } })}
-                  className="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600"
-                />
-              </div>
-
-              {/* URL */}
               <div>
                 <label className="block text-gray-700 dark:text-gray-200">{t("url")}</label>
                 <input
@@ -216,7 +196,6 @@ export default function ManageMenu() {
                 />
               </div>
 
-              {/* Type */}
               <div>
                 <label className="block text-gray-700 dark:text-gray-200">{t("type")}</label>
                 <select
@@ -229,8 +208,7 @@ export default function ManageMenu() {
                 </select>
               </div>
 
-              {/* Icon */}
-              <div>
+              {/* <div>
                 <label className="block text-gray-700 dark:text-gray-200">{t("icon")}</label>
                 <input
                   type="text"
@@ -238,9 +216,8 @@ export default function ManageMenu() {
                   onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
                   className="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600"
                 />
-              </div>
+              </div> */}
 
-              {/* Parent ID */}
               <div>
                 <label className="block text-gray-700 dark:text-gray-200">{t("parentMenu")}</label>
                 <select
@@ -257,7 +234,6 @@ export default function ManageMenu() {
                 </select>
               </div>
 
-              {/* Buttons */}
               <div className="flex justify-end space-x-2">
                 <button
                   type="button"

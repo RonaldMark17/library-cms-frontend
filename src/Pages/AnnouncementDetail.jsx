@@ -46,6 +46,9 @@ export default function AnnouncementDetail() {
     );
   }
 
+  // Use image_url if available, fallback to placeholder
+  const imageSrc = announcement.image_url || '/placeholder.jpg';
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <button
@@ -57,13 +60,11 @@ export default function AnnouncementDetail() {
       </button>
 
       <div className="card">
-        {announcement.image_path && (
-          <img
-            src={`${API_URL}/storage/${announcement.image_path}`}
-            alt={announcement.title[currentLang] || announcement.title.en}
-            className="w-full h-96 object-cover rounded-lg mb-6"
-          />
-        )}
+        <img
+          src={imageSrc}
+          alt={announcement.title[currentLang] || announcement.title.en}
+          className="w-full h-96 object-cover rounded-lg mb-6"
+        />
 
         <div className="flex flex-wrap items-center gap-3 mb-4">
           <span className={`badge ${

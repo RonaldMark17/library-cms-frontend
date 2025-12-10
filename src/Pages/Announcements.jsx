@@ -20,8 +20,11 @@ export default function Announcements() {
       const data = await res.json();
       setAnnouncements(data.data || data);
       setTotalPages(data.last_page || 1);
-    } catch (error) { console.error(error); } 
-    finally { setLoading(false); }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   const lang = i18n.language;
@@ -36,7 +39,11 @@ export default function Announcements() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {announcements.map(a => (
           <div key={a.id} className="card p-4 flex flex-col space-y-4">
-            {a.image_path && <img src={`${API_URL}/storage/${a.image_path}`} className="w-full h-48 object-cover rounded-lg" alt={a.title[lang] || a.title.en} />}
+            <img
+              src={a.image_url || '/placeholder.jpg'}
+              className="w-full h-48 object-cover rounded-lg"
+              alt={a.title[lang] || a.title.en}
+            />
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
                 <span className="flex items-center gap-1"><Tag className="w-4 h-4" />{a.priority}</span>
