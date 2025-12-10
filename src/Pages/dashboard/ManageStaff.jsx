@@ -23,6 +23,7 @@ export default function ManageStaff() {
   });
 
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false); // <-- Added for submit loading
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -49,8 +50,9 @@ export default function ManageStaff() {
   // Submit form (create/update)
   async function handleSubmit(e) {
     e.preventDefault();
-    const payload = new FormData();
+    setSubmitting(true); // start loading
 
+    const payload = new FormData();
     payload.append("name", formData.name);
     payload.append("role", formData.role);
     if (formData.email) payload.append("email", formData.email);
@@ -59,17 +61,14 @@ export default function ManageStaff() {
     if (formData.image) payload.append("image", formData.image);
 
     let url = `${API_URL}/staff-members`;
-    let method = "POST";
-
     if (editingId) {
       url = `${API_URL}/staff-members/${editingId}`;
-      // Laravel PUT with FormData workaround
-      payload.append("_method", "PUT");
+      payload.append("_method", "PUT"); // Laravel workaround
     }
 
     try {
       const res = await fetch(url, {
-        method: "POST", // Always POST when using _method for PUT
+        method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: payload,
       });
@@ -87,6 +86,8 @@ export default function ManageStaff() {
     } catch (error) {
       console.error(error);
       setMessage(t("Error Saving Staff"));
+    } finally {
+      setSubmitting(false); // stop loading
     }
   }
 
@@ -297,8 +298,15 @@ export default function ManageStaff() {
               </div>
 
               <div className="flex space-x-3 pt-4">
-                <button type="submit" className="primary-btn flex-1">
-                  {editingId ? t("update") : t("create")}
+                <button type="submit" className="primary-btn flex-1" disabled={submitting}>
+                  {submitting ? (
+                    <div className="flex items-center justify-center space-x-2">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      <span>{editingId ? t("Updating...") : t("Creating...")}</span>
+                    </div>
+                  ) : (
+                    editingId ? t("update") : t("create")
+                  )}
                 </button>
                 <button type="button" onClick={() => setShowModal(false)} className="secondary-btn">
                   {t("cancel")}

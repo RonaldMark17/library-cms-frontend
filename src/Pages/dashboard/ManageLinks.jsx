@@ -10,6 +10,7 @@ export default function ManageLinks() {
   const [links, setLinks] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [submitting, setSubmitting] = useState(false); // <-- Loading state
   const [formData, setFormData] = useState({ title: { en: "" }, url: "", description: { en: "" }, icon: "" });
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
@@ -34,6 +35,9 @@ export default function ManageLinks() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    setSubmitting(true); // <-- start loading
+    setMessage("");
+
     try {
       const url = editingId ? `${API_URL}/external-links/${editingId}` : `${API_URL}/external-links`;
       const method = editingId ? "PUT" : "POST";
@@ -42,9 +46,21 @@ export default function ManageLinks() {
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-      if (res.ok) { setMessage(editingId ? t("linkUpdated") : t("linkCreated")); setShowModal(false); resetForm(); fetchLinks(); }
-      else setMessage(t("errorSavingLink"));
-    } catch (error) { console.error(error); setMessage(t("errorSavingLink")); }
+
+      if (res.ok) {
+        setMessage(editingId ? t("linkUpdated") : t("linkCreated"));
+        setShowModal(false);
+        resetForm();
+        fetchLinks();
+      } else {
+        setMessage(t("errorSavingLink"));
+      }
+    } catch (error) {
+      console.error(error);
+      setMessage(t("errorSavingLink"));
+    } finally {
+      setSubmitting(false); // <-- stop loading
+    }
   }
 
   async function handleDelete(id) {
@@ -120,8 +136,17 @@ export default function ManageLinks() {
               </div>
 
               <div className="flex space-x-3 pt-4">
-                <button type="submit" className="primary-btn flex-1">{editingId ? t("update") : t("create")}</button>
                 <button type="button" onClick={() => setShowModal(false)} className="secondary-btn">{t("cancel")}</button>
+                <button type="submit" className="primary-btn flex-1" disabled={submitting}>
+                  {submitting ? (
+                    <div className="flex items-center justify-center space-x-2">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      <span>{editingId ? t("updating") : t("saving")}...</span>
+                    </div>
+                  ) : (
+                    editingId ? t("update") : t("create")
+                  )}
+                </button>
               </div>
             </form>
           </div>

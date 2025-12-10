@@ -7,9 +7,10 @@ import { AppContext } from "../../Context/AppContext";
 export default function ManageMenu() {
   const { token } = useContext(AppContext);
   const { t } = useTranslation();
-  const { menuItems, setMenuItems } = useOutletContext(); // ← Use Layout's state
+  const { menuItems, setMenuItems } = useOutletContext();
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [submitting, setSubmitting] = useState(false); // <-- Loading state
   const [formData, setFormData] = useState({
     label: { en: "" },
     url: "",
@@ -56,6 +57,9 @@ export default function ManageMenu() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    setSubmitting(true); // <-- Start loading
+    setMessage("");
+
     try {
       const tlLabel = await translateToTagalog(formData.label.en);
       const payload = { ...formData, label: { en: formData.label.en, tl: tlLabel } };
@@ -85,6 +89,8 @@ export default function ManageMenu() {
     } catch (error) {
       console.error(error);
       setMessage(t("errorSavingMenu"));
+    } finally {
+      setSubmitting(false); // <-- Stop loading
     }
   }
 
@@ -208,16 +214,6 @@ export default function ManageMenu() {
                 </select>
               </div>
 
-              {/* <div>
-                <label className="block text-gray-700 dark:text-gray-200">{t("icon")}</label>
-                <input
-                  type="text"
-                  value={formData.icon}
-                  onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-                  className="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600"
-                />
-              </div> */}
-
               <div>
                 <label className="block text-gray-700 dark:text-gray-200">{t("parentMenu")}</label>
                 <select
@@ -242,8 +238,15 @@ export default function ManageMenu() {
                 >
                   {t("cancel")}
                 </button>
-                <button type="submit" className="primary-btn px-4 py-2">
-                  {editingId ? t("update") : t("save")}
+                <button type="submit" className="primary-btn px-4 py-2" disabled={submitting}>
+                  {submitting ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      <span>{editingId ? t("updating") : t("saving")}...</span>
+                    </div>
+                  ) : (
+                    editingId ? t("update") : t("save")
+                  )}
                 </button>
               </div>
             </form>

@@ -88,7 +88,7 @@ export default function Dashboard() {
 
   if (user.role === 'admin') {
     adminSections.push({
-      title: t('settings'),
+      title: t('System Settings'),
       icon: SettingsIcon,
       link: "/dashboard/system-settings",
       color: "gray"
@@ -102,6 +102,35 @@ export default function Dashboard() {
         <p className="text-gray-600 dark:text-gray-400">
           Manage your library content and settings
         </p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="card">
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+            Quick Stats
+          </h3>
+          <p className="text-3xl font-bold text-primary-600 dark:text-primary-400">
+            {stats.users} Users
+          </p>
+          
+        </div>
+
+        <div className="card">
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+            Your Role
+          </h3>
+          <span className="badge badge-primary text-lg capitalize">
+            {user.role}
+          </span>
+        </div>
+
+        <div className="card">
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+            System Status
+          </h3>
+          <span className="badge badge-success text-lg">
+            All Systems Operational
+          </span>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -134,37 +163,7 @@ export default function Dashboard() {
         })}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="card">
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-            Quick Stats
-          </h3>
-          <p className="text-3xl font-bold text-primary-600 dark:text-primary-400">
-            {stats.users} Users
-          </p>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-            Welcome back, {user.name}
-          </p>
-        </div>
-
-        <div className="card">
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-            Your Role
-          </h3>
-          <span className="badge badge-primary text-lg capitalize">
-            {user.role}
-          </span>
-        </div>
-
-        <div className="card">
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-            System Status
-          </h3>
-          <span className="badge badge-success text-lg">
-            All Systems Operational
-          </span>
-        </div>
-      </div>
+      
     </div>
   );
 }

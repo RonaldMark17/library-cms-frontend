@@ -19,6 +19,7 @@ export default function ManageAnnouncements() {
     image: null,
   });
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false); // <-- submit loader
   const [message, setMessage] = useState("");
 
   const API_URL = import.meta.env.VITE_API_URL;
@@ -88,6 +89,9 @@ export default function ManageAnnouncements() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
+    setMessage("");
+
     const formToSend = new FormData();
     formToSend.append("title", formData.title);
     formToSend.append("content", formData.content);
@@ -120,6 +124,8 @@ export default function ManageAnnouncements() {
     } catch (error) {
       console.error(error);
       setMessage(t("errorSavingAnnouncement"));
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -282,8 +288,23 @@ export default function ManageAnnouncements() {
               </div>
 
               <div className="flex space-x-3 pt-4">
-                <button type="submit" className="primary-btn flex-1">{editingId ? t("update") : t("create")}</button>
-                <button type="button" onClick={() => setShowModal(false)} className="secondary-btn">{t("cancel")}</button>
+                <button
+                  type="submit"
+                  className="primary-btn flex-1"
+                  disabled={submitting}
+                >
+                  {submitting ? (
+                    <div className="flex items-center justify-center space-x-2">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      <span>{editingId ? t("updating") : t("creating")}...</span>
+                    </div>
+                  ) : (
+                    editingId ? t("update") : t("create")
+                  )}
+                </button>
+                <button type="button" onClick={() => setShowModal(false)} className="secondary-btn">
+                  {t("cancel")}
+                </button>
               </div>
             </form>
           </div>

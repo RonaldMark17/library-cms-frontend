@@ -11,7 +11,7 @@ export default function ManageContent() {
   const [editingSection, setEditingSection] = useState(null);
   const [formData, setFormData] = useState({ content: { en: "" } });
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [saving, setSaving] = useState(false); // tracks save loading
   const [message, setMessage] = useState("");
 
   const API_URL = import.meta.env.VITE_API_URL;
@@ -40,27 +40,6 @@ export default function ManageContent() {
     setEditingSection(section.id);
     setFormData({ content: { en: section.content.en || "" } });
   };
-
-  async function translateToTagalog(text) {
-    try {
-      const res = await fetch("https://libretranslate.com/translate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          q: text,
-          source: "en",
-          target: "tl",
-          format: "text",
-        }),
-      });
-
-      const data = await res.json();
-      return data.translatedText || "";
-    } catch (error) {
-      console.error("Translation error:", error);
-      return "";
-    }
-  }
 
   async function handleUpdate(sectionId) {
     setSaving(true);
@@ -105,7 +84,10 @@ export default function ManageContent() {
     <div className="space-y-6 text-gray-900 dark:text-white">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <Link to="/dashboard" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+          <Link
+            to="/dashboard"
+            className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+          >
             <ArrowLeft className="w-6 h-6" />
           </Link>
           <h1 className="title mb-0">{t("manageContent")}</h1>
@@ -147,6 +129,7 @@ export default function ManageContent() {
                       })
                     }
                     rows="6"
+                    disabled={saving} // disable while saving
                     className="input-field bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg p-2 w-full"
                   />
                 </div>
@@ -157,8 +140,17 @@ export default function ManageContent() {
                     disabled={saving}
                     className="primary-btn flex items-center space-x-2"
                   >
-                    <Save className="w-4 h-4" />
-                    <span>{saving ? t("loading") : t("save")}</span>
+                    {saving ? (
+                      <div className="flex items-center space-x-2">
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                        <span>{t("Saving")}...</span>
+                      </div>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4" />
+                        <span>{t("save")}</span>
+                      </>
+                    )}
                   </button>
                   <button onClick={() => setEditingSection(null)} className="secondary-btn">
                     {t("cancel")}

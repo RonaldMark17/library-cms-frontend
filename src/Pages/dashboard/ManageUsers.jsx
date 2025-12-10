@@ -74,7 +74,7 @@ export default function ManageUsers() {
     setSubmitting(true);
 
     try {
-      const url = editingId ? `${API_URL}/users/${editingId}` : `${API_URL}/register`;
+      const url = editingId ? `${API_URL}/users/${editingId}` : `${API_URL}/users`;
       const method = editingId ? "PUT" : "POST";
 
       const res = await fetch(url, {
@@ -92,7 +92,7 @@ export default function ManageUsers() {
         if (data.errors) setErrors(data.errors);
         else setMessage(data.message || "Error saving user");
       } else {
-        setMessage(editingId ? "User updated successfully!" : "User registered successfully!");
+        setMessage(editingId ? "User updated successfully!" : "User created successfully!");
         setShowModal(false);
         resetForm();
         fetchUsers();
@@ -145,7 +145,7 @@ export default function ManageUsers() {
           className="primary-btn flex items-center space-x-2"
         >
           <Plus className="w-5 h-5" />
-          <span>{editingId ? "Edit User" : "Register New User"}</span>
+          <span>{editingId ? "Edit User" : "Create New User"}</span>
         </button>
       </div>
 
@@ -193,7 +193,6 @@ export default function ManageUsers() {
                   {user.disabled ? "Disabled" : "Active"}
                 </td>
                 <td className="py-3 px-4 flex items-center space-x-3">
-                  {/* Edit */}
                   <button
                     onClick={() => startEditing(user)}
                     className="text-blue-600 hover:text-blue-700 dark:text-blue-400 flex items-center space-x-1"
@@ -201,7 +200,6 @@ export default function ManageUsers() {
                     <Edit className="w-5 h-5" />
                   </button>
 
-                  {/* Toggle Switch */}
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
@@ -235,7 +233,7 @@ export default function ManageUsers() {
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                {editingId ? "Edit User" : "Register New User"}
+                {editingId ? "Edit User" : "Create New User"}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
@@ -246,7 +244,6 @@ export default function ManageUsers() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Name *
@@ -261,7 +258,6 @@ export default function ManageUsers() {
                 {errors.name && <p className="error-text">{errors.name[0]}</p>}
               </div>
 
-              {/* Email */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Email *
@@ -276,7 +272,6 @@ export default function ManageUsers() {
                 {errors.email && <p className="error-text">{errors.email[0]}</p>}
               </div>
 
-              {/* Role */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Role *
@@ -293,7 +288,6 @@ export default function ManageUsers() {
                 </select>
               </div>
 
-              {/* Password (only for create) */}
               {!editingId && (
                 <>
                   <div>
@@ -327,10 +321,9 @@ export default function ManageUsers() {
                 </>
               )}
 
-              {/* Buttons */}
               <div className="flex space-x-3 pt-4">
                 <button type="submit" className="primary-btn flex-1" disabled={submitting}>
-                  {submitting ? "Saving..." : editingId ? "Update User" : "Register User"}
+                  {submitting ? "Saving..." : editingId ? "Update User" : "Create User"}
                 </button>
                 <button type="button" onClick={() => setShowModal(false)} className="secondary-btn">
                   {t("cancel")}

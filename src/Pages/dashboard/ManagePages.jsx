@@ -12,6 +12,7 @@ export default function ManagePages() {
   const [pages, setPages] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [submitting, setSubmitting] = useState(false); // <-- Loading state
   const [formData, setFormData] = useState({
     slug: "",
     title: "",
@@ -23,7 +24,6 @@ export default function ManagePages() {
 
   useEffect(() => {
     fetchPages();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function fetchPages() {
@@ -44,6 +44,9 @@ export default function ManagePages() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    setSubmitting(true); // <-- Start loading
+    setMessage("");
+
     try {
       const url = editingId ? `${API_URL}/pages/${editingId}` : `${API_URL}/pages`;
       const method = editingId ? "PUT" : "POST";
@@ -65,6 +68,8 @@ export default function ManagePages() {
     } catch (error) {
       console.error(error);
       setMessage(t("errorSavingPage"));
+    } finally {
+      setSubmitting(false); // <-- Stop loading
     }
   }
 
@@ -185,8 +190,17 @@ export default function ManagePages() {
               </div>
 
               <div className="flex space-x-3 pt-4">
-                <button type="submit" className="primary-btn flex-1">{editingId ? t("update") : t("create")}</button>
                 <button type="button" onClick={() => setShowModal(false)} className="secondary-btn">{t("cancel")}</button>
+                <button type="submit" className="primary-btn flex-1" disabled={submitting}>
+                  {submitting ? (
+                    <div className="flex items-center space-x-2 justify-center">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      <span>{editingId ? t("updating") : t("saving")}...</span>
+                    </div>
+                  ) : (
+                    editingId ? t("update") : t("create")
+                  )}
+                </button>
               </div>
             </form>
           </div>
