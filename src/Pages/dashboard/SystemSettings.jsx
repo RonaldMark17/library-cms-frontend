@@ -5,88 +5,58 @@ import { ArrowLeft, Save, Mail, Users as UsersIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function SystemSettings() {
-  const { token } = useContext(AppContext);
+  const { token, siteName, setSiteName, defaultLanguage, setDefaultLanguage, theme, setTheme, updateSettings } =
+    useContext(AppContext);
   const { t } = useTranslation();
-  const API_URL = import.meta.env.VITE_API_URL || "";
 
   const [settings, setSettings] = useState({
-    site_name: "",
-    default_language: "en",
-    default_theme: "light",
+    site_name: siteName || "",
+    default_language: defaultLanguage || "en",
+    default_theme: theme || "light",
   });
-
   const [subscribers, setSubscribers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    fetchSettings();
     fetchSubscribers();
   }, []);
 
-  // Fetch system settings
-  async function fetchSettings() {
-    try {
-      const res = await fetch(`${API_URL}/settings`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      setSettings(data);
-    } catch (error) {
-      console.error("Error fetching settings:", error);
-      setMessage("Error fetching settings");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  // Fetch email subscribers
   async function fetchSubscribers() {
     try {
-      const res = await fetch(`${API_URL}/subscribers`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/subscribers`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       setSubscribers(data.data || data);
     } catch (error) {
       console.error("Error fetching subscribers:", error);
+    } finally {
+      setLoading(false);
     }
   }
 
-  // Helper to check if subscriber is verified
   function isVerified(subscriber) {
     const v = subscriber.verified_at;
     return v !== null && v !== undefined && v !== "" && v !== "null";
   }
 
-  // Handle settings form submit
   async function handleSubmit(e) {
     e.preventDefault();
     setSaving(true);
     setMessage("");
 
-    try {
-      const res = await fetch(`${API_URL}/settings/bulk`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ settings }),
-      });
+    const res = await updateSettings(settings);
+    setMessage(res.message);
 
-      if (res.ok) {
-        setMessage("Settings updated successfully!");
-      } else {
-        setMessage("Error updating settings");
-      }
-    } catch (error) {
-      console.error(error);
-      setMessage("Error updating settings");
-    } finally {
-      setSaving(false);
+    if (res.success) {
+      setSiteName(settings.site_name);
+      setDefaultLanguage(settings.default_language);
+      setTheme(settings.default_theme);
     }
+
+    setSaving(false);
   }
 
   if (loading) {
@@ -120,9 +90,7 @@ export default function SystemSettings() {
           <h2 className="subtitle">General Settings</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Site Name
-              </label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Site Name</label>
               <input
                 type="text"
                 value={settings.site_name || ""}
@@ -132,9 +100,7 @@ export default function SystemSettings() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Default Language
-              </label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Default Language</label>
               <select
                 value={settings.default_language || "en"}
                 onChange={(e) => setSettings({ ...settings, default_language: e.target.value })}
@@ -146,9 +112,7 @@ export default function SystemSettings() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Default Theme
-              </label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Default Theme</label>
               <select
                 value={settings.default_theme || "light"}
                 onChange={(e) => setSettings({ ...settings, default_theme: e.target.value })}

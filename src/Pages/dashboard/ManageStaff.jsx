@@ -23,7 +23,7 @@ export default function ManageStaff() {
   });
 
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false); // <-- Added for submit loading
+  const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -50,7 +50,7 @@ export default function ManageStaff() {
   // Submit form (create/update)
   async function handleSubmit(e) {
     e.preventDefault();
-    setSubmitting(true); // start loading
+    setSubmitting(true);
 
     const payload = new FormData();
     payload.append("name", formData.name);
@@ -63,7 +63,7 @@ export default function ManageStaff() {
     let url = `${API_URL}/staff-members`;
     if (editingId) {
       url = `${API_URL}/staff-members/${editingId}`;
-      payload.append("_method", "PUT"); // Laravel workaround
+      payload.append("_method", "PUT");
     }
 
     try {
@@ -87,7 +87,7 @@ export default function ManageStaff() {
       console.error(error);
       setMessage(t("Error Saving Staff"));
     } finally {
-      setSubmitting(false); // stop loading
+      setSubmitting(false);
     }
   }
 
@@ -174,19 +174,23 @@ export default function ManageStaff() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {staff.map((member) => (
           <div key={member.id} className="card">
-            {member.image_url && (
+            {member.image_url ? (
               <img
                 src={member.image_url}
                 alt={member.name.en}
                 className="w-full h-48 object-cover rounded-lg mb-4"
               />
+            ) : (
+              <div className="w-full h-48 flex items-center justify-center bg-gray-200 dark:bg-gray-700 rounded-lg mb-4">
+                <svg className="w-16 h-16 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/>
+                </svg>
+              </div>
             )}
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
               {member.name.en}
             </h3>
-            <p className="text-primary-600 dark:text-primary-400 mb-2">
-              {member.role.en}
-            </p>
+            <p className="text-primary-600 dark:text-primary-400 mb-2">{member.role.en}</p>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{member.email}</p>
 
             <div className="flex space-x-2">

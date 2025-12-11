@@ -153,12 +153,17 @@ function UserDropdown({ user, t, handleLogout }) {
 }
 
 export default function Layout() {
-  const { user, token, setUser, setToken, loading } = useContext(AppContext);
-  const { t } = useTranslation();
+  const { user, token, setUser, setToken, loading, siteName, defaultLanguage } = useContext(AppContext);
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [menuItems, setMenuItems] = useState([]);
   const [menuLoading, setMenuLoading] = useState(true);
+
+  // Update i18n language dynamically
+  useEffect(() => {
+    i18n.changeLanguage(defaultLanguage);
+  }, [defaultLanguage]);
 
   // Fetch menu items
   useEffect(() => {
@@ -240,7 +245,7 @@ export default function Layout() {
             {/* Logo */}
             <NavLink to="/" className="flex items-center space-x-2">
               <BookOpen className="w-8 h-8 text-primary-600 dark:text-primary-400" />
-              <span className="text-xl font-bold text-gray-900 dark:text-white">LibroSys</span>
+              <span className="text-xl font-bold text-gray-900 dark:text-white">{siteName}</span>
             </NavLink>
 
             {/* Desktop menu */}
@@ -309,7 +314,7 @@ export default function Layout() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">LibroSys</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{siteName}</h3>
               <p className="text-gray-600 dark:text-gray-400 text-sm">Empowering communities through knowledge and innovation.</p>
             </div>
             <div>
@@ -325,7 +330,7 @@ export default function Layout() {
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700 text-center text-gray-600 dark:text-gray-400 text-sm">
-            © 2025 LibroSys. All rights reserved.
+            © 2025 {siteName}. All rights reserved.
           </div>
         </div>
       </footer>
