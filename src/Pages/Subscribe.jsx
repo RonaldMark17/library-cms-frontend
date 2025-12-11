@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Mail, Bell, CheckCircle } from "lucide-react";
+import { Mail, Bell, CheckCircle, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom"; // import if using react-router
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function Subscribe() {
   const { t } = useTranslation();
+  const navigate = useNavigate(); // hook for navigation
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -42,7 +44,17 @@ export default function Subscribe() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="card text-center">
+      <div className="card text-center p-6 relative">
+
+        {/* Back button */}
+        <button
+          onClick={() => navigate(-1)}
+          className="absolute left-4 top-4 flex items-center text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400"
+        >
+          <ArrowLeft className="w-5 h-5 mr-1" />
+          {t('back')}
+        </button>
+
         <div className="inline-flex items-center justify-center w-20 h-20 bg-primary-100 dark:bg-primary-900 rounded-full mb-6">
           <Bell className="w-10 h-10 text-primary-600 dark:text-primary-400" />
         </div>
