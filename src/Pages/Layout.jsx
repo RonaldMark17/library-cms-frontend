@@ -209,16 +209,20 @@ export default function Layout() {
   const activeClass = ({ isActive }) =>
     `nav-link px-3 py-1 rounded ${isActive ? "bg-primary-500 text-white" : ""}`;
 
-  // Replace renderMenu to only show active items
-  const renderMenu = (items, parentId = null) =>
+  // Render menu items, with optional footer styling
+  const renderMenu = (items, parentId = null, isFooter = false) =>
     items
-      .filter((item) => item.parent_id === parentId && item.is_active) // <-- Only active
+      .filter((item) => item.parent_id === parentId && item.is_active)
       .map((item) => {
-        const children = renderMenu(items, item.id);
+        const children = renderMenu(items, item.id, isFooter);
+        const linkClass = isFooter
+          ? "text-gray-700 dark:text-gray-200 hover:underline" // footer style
+          : activeClass; // header style
+
         if (children.length > 0) {
           return (
             <div key={item.id} className="relative group">
-              <NavLink to={item.url || "#"} className={activeClass}>
+              <NavLink to={item.url || "#"} className={linkClass}>
                 {item.label.en}
               </NavLink>
               <div className="absolute hidden group-hover:block bg-white dark:bg-gray-800 shadow-lg rounded mt-1">
@@ -228,7 +232,7 @@ export default function Layout() {
           );
         }
         return (
-          <NavLink key={item.id} to={item.url || "#"} className={activeClass}>
+          <NavLink key={item.id} to={item.url || "#"} className={linkClass}>
             {item.label.en}
           </NavLink>
         );
@@ -314,23 +318,54 @@ export default function Layout() {
       {/* Footer */}
       <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {/* About / Site */}
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{siteName}</h3>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">Empowering communities through knowledge and innovation.</p>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">
+                Empowering minds and enriching lives through knowledge, innovation, and community engagement.
+              </p>
             </div>
+
+            {/* Quick Links */}
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Links</h3>
-              <div className="flex flex-col space-y-2">{menuLoading ? <LoadingSpinner /> : renderMenu(menuItems)}</div>
+              <div className="flex flex-col space-y-2">
+                {menuLoading ? <LoadingSpinner /> : renderMenu(menuItems, null, true)}
+              </div>
             </div>
+
+            {/* Contact Info */}
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Contact</h3>
               <p className="text-gray-600 dark:text-gray-400 text-sm">
-                Email: library@example.com<br />
-                Phone: (123) 456-7890
+                Email: <a href="mailto:library@example.com" className="hover:underline">library@example.com</a><br />
+                Phone: <a href="tel:+1234567890" className="hover:underline">(123) 456-7890</a><br />
+                Address: 123 Library Street, Knowledge City, 4567<br />
+                Hours: Mon-Fri 8:00am - 6:00pm
               </p>
             </div>
+
+            {/* Social Media */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Follow Us</h3>
+              <div className="flex space-x-4">
+                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-gray-600 dark:text-gray-400 hover:text-blue-600">
+                  <Icons.Facebook className="w-5 h-5" />
+                </a>
+                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-600 dark:text-gray-400 hover:text-blue-400">
+                  <Icons.Twitter className="w-5 h-5" />
+                </a>
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-gray-600 dark:text-gray-400 hover:text-pink-500">
+                  <Icons.Instagram className="w-5 h-5" />
+                </a>
+                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-gray-600 dark:text-gray-400 hover:text-blue-700">
+                  <Icons.Linkedin className="w-5 h-5" />
+                </a>
+              </div>
+            </div>
           </div>
+
           <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700 text-center text-gray-600 dark:text-gray-400 text-sm">
             © 2025 {siteName}. All rights reserved.
           </div>

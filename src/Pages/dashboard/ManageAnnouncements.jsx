@@ -221,7 +221,7 @@ export default function ManageAnnouncements() {
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                {editingId ? t("editAnnouncement") : t("addAnnouncement")}
+                {editingId ? t("Edit Announcement") : t("Add Announcement")}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
@@ -233,7 +233,7 @@ export default function ManageAnnouncements() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label>{t("title")} *</label>
+                <label>{t("Title")} *</label>
                 <input
                   type="text"
                   value={formData.title}
@@ -244,7 +244,7 @@ export default function ManageAnnouncements() {
               </div>
 
               <div>
-                <label>{t("content")} *</label>
+                <label>{t("Content")} *</label>
                 <textarea
                   value={formData.content}
                   onChange={(e) => setFormData({ ...formData, content: e.target.value })}
@@ -256,19 +256,19 @@ export default function ManageAnnouncements() {
 
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label>{t("priority")}</label>
+                  <label>{t("Priority")}</label>
                   <select
                     value={formData.priority}
                     onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
                     className="input-field"
                   >
-                    <option value="low">{t("low")}</option>
-                    <option value="medium">{t("medium")}</option>
-                    <option value="high">{t("high")}</option>
+                    <option value="low">{t("Low")}</option>
+                    <option value="medium">{t("Medium")}</option>
+                    <option value="high">{t("High")}</option>
                   </select>
                 </div>
                 <div>
-                  <label>{t("publishedDate")}</label>
+                  <label>{t("Published Date")}</label>
                   <input
                     type="date"
                     value={formData.published_at}
@@ -277,7 +277,7 @@ export default function ManageAnnouncements() {
                   />
                 </div>
                 <div>
-                  <label>{t("expiresDate")}</label>
+                  <label>{t("Expires Date")}</label>
                   <input
                     type="date"
                     value={formData.expires_at}
@@ -290,7 +290,7 @@ export default function ManageAnnouncements() {
               <div>
                 <label className="flex items-center space-x-2">
                   <Upload className="w-4 h-4" />
-                  <span>{t("image")}</span>
+                  <span>{t("Image")}</span>
                 </label>
                 <input
                   type="file"
