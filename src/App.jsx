@@ -4,6 +4,7 @@ import { AppContext } from "./Context/AppContext";
 import "./App.css";
 import "./i18n/config";
 
+
 // Layout
 import Layout from "./Pages/Layout";
 
@@ -19,6 +20,9 @@ import Search from "./Pages/Search";
 import PageView from "./Pages/PageView";
 import VerifySubscription from "./Pages/VerifySubscription";
 import SubscriptionStatus from "./Pages/SubscriptionStatus"; // NEW
+import ForgotPassword from "./Pages/Auth/ForgotPassword";
+import ResetPassword from "./Pages/Auth/ResetPassword";
+
 
 // Auth Pages
 import Login from "./Pages/Auth/Login";
@@ -94,6 +98,22 @@ export default function App() {
             element={
               <ProtectedRoute requireAuth={false}>
                 <Login />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="forgot-password"
+            element={
+              <ProtectedRoute requireAuth={false}>
+                <ForgotPassword />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="reset-password"
+            element={
+              <ProtectedRoute requireAuth={false}>
+                <ResetPassword />
               </ProtectedRoute>
             }
           />

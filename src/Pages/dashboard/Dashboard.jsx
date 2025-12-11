@@ -95,6 +95,14 @@ export default function Dashboard() {
     });
   }
 
+  // Filter sections based on role
+  const filteredSections = adminSections.filter(section => {
+    if (section.title === "Manage Users" && user.role !== "admin") {
+      return false; // hide Manage Users for non-admins
+    }
+    return true;
+  });
+
   return (
     <div className="space-y-8">
       <div>
@@ -103,6 +111,7 @@ export default function Dashboard() {
           Manage your library content and settings
         </p>
       </div>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="card">
           <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
@@ -111,7 +120,6 @@ export default function Dashboard() {
           <p className="text-3xl font-bold text-primary-600 dark:text-primary-400">
             {stats.users} Users
           </p>
-          
         </div>
 
         <div className="card">
@@ -134,7 +142,7 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {adminSections.map((section, index) => {
+        {filteredSections.map((section, index) => {
           const Icon = section.icon;
           const colorClasses = {
             primary: "bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-400",
@@ -143,7 +151,8 @@ export default function Dashboard() {
             purple: "bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400",
             blue: "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400",
             red: "bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400",
-            gray: "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
+            gray: "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400",
+            indigo: "bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400"
           };
 
           return (
@@ -162,8 +171,6 @@ export default function Dashboard() {
           );
         })}
       </div>
-
-      
     </div>
   );
 }

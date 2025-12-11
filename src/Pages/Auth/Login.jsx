@@ -33,12 +33,11 @@ export default function Login() {
         body: JSON.stringify(formData),
       });
 
-      // Handle 401 or other HTTP errors
       if (!res.ok) {
         setErrors({ general: ["Invalid credentials or unauthorized access."] });
         toast.error("Invalid credentials or unauthorized access.");
         setLoading(false);
-        return; // Stop further execution
+        return;
       }
 
       const data = await res.json();
@@ -47,10 +46,9 @@ export default function Login() {
         setUserId(data.user_id);
         setShow2FA(true);
       } else {
-        // Successful login
         localStorage.setItem("token", data.access_token);
         setToken(data.access_token);
-        navigate("/"); // Navigate only on success
+        navigate("/");
       }
     } catch (error) {
       setErrors({ general: ["An error occurred. Please try again."] });
@@ -63,7 +61,7 @@ export default function Login() {
   const handle2FAVerify = (token) => {
     localStorage.setItem("token", token);
     setToken(token);
-    navigate("/"); // Navigate after successful 2FA
+    navigate("/");
   };
 
   return (
@@ -110,6 +108,16 @@ export default function Login() {
               required
             />
             {errors.password && <p className="error-text">{errors.password[0]}</p>}
+
+            {/* Forgot Password Link */}
+            <div className="text-right mt-2">
+              <Link
+                to="/forgot-password"
+                className="text-sm text-blue-600 hover:underline dark:text-blue-400"
+              >
+                {t('forgotPassword')}
+              </Link>
+            </div>
           </div>
 
           {errors.general && (
