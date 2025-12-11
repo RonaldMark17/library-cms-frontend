@@ -135,8 +135,11 @@ export default function Dashboard() {
           <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
             System Status
           </h3>
-          <span className="badge badge-success text-lg">
-            All Systems Operational
+          <span className={`badge text-lg ${user.role === "admin"
+              ? "badge-success" // green for admin
+              : "badge-warning" // yellow for librarian
+            }`}>
+            {user.role === "admin" ? "All Systems Operational" : "Some Systems Operational"}
           </span>
         </div>
       </div>
