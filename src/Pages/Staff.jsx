@@ -1,25 +1,43 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect, useContext } from "react";
+import { AppContext } from "../Context/AppContext";
 import { useTranslation } from "react-i18next";
 import { Mail, Phone, User } from "lucide-react";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function Staff() {
+  const { token } = useContext(AppContext);
   const { t, i18n } = useTranslation();
-  const [staff, setStaff] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    fetchStaff();
+    fetchUsers();
   }, []);
 
-  async function fetchStaff() {
+  async function fetchUsers() {
+    setLoading(true);
+    setError("");
     try {
-      const res = await fetch(`${API_URL}/staff-members`);
+      const res = await fetch(`${API_URL}/users`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || "Failed to fetch users");
+      }
+
       const data = await res.json();
-      setStaff(data);
-    } catch (error) {
-      console.error("Error fetching staff:", error);
+
+      // Filter out disabled users
+      const activeUsers = data.filter(user => !user.disabled);
+
+      setUsers(activeUsers);
+    } catch (err) {
+      console.error("Error fetching users:", err);
+      setError(t("Error Fetching Users"));
     } finally {
       setLoading(false);
     }
@@ -35,23 +53,39 @@ export default function Staff() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="text-center text-red-600 dark:text-red-400 py-10">
+        {error}
+      </div>
+    );
+  }
+
+  if (users.length === 0) {
+    return (
+      <div className="text-center text-gray-600 dark:text-gray-400 py-10">
+        {t("No Staff Available")}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h1 className="title">{t("meetOurTeam")}</h1>
+        <h1 className="title">{t("Our Staffs")}</h1>
         <p className="text-xl text-gray-600 dark:text-gray-400">
-          Dedicated professionals committed to serving you
+          Dedicated users who make our platform thrive
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {staff.map((member) => (
-          <div key={member.id} className="card text-center hover:shadow-lg transition-shadow">
+        {users.map((user) => (
+          <div key={user.id} className="card text-center hover:shadow-lg transition-shadow">
             <div className="mb-4">
-              {member.image_url ? (
+              {user.image_path ? (
                 <img
-                  src={member.image_url}
-                  alt={member.name[currentLang] || member.name.en}
+                  src={`http://127.0.0.1:8000/storage/${user.image_path}`}
+                  alt={typeof user.name === "string" ? user.name : user.name?.[currentLang] || user.name?.en}
                   className="w-32 h-32 rounded-full mx-auto object-cover"
                 />
               ) : (
@@ -62,39 +96,39 @@ export default function Staff() {
             </div>
 
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-              {member.name?.[currentLang] || member.name?.en || ""}
+              {typeof user.name === "string" ? user.name : user.name?.[currentLang] || user.name?.en || ""}
             </h3>
 
             <p className="text-primary-600 dark:text-primary-400 font-medium mb-4">
-              {member.role?.[currentLang] || member.role?.en || ""}
+              {user.role?.[currentLang] || user.role?.en || ""}
             </p>
 
-            {member.bio && (
+            {user.bio && (
               <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                {member.bio?.[currentLang] || member.bio?.en || ""}
+                {user.bio?.[currentLang] || user.bio?.en || ""}
               </p>
             )}
 
             <div className="space-y-2 text-sm">
-              {member.email && (
+              {user.email && (
                 <div className="flex items-center justify-center text-gray-600 dark:text-gray-400">
                   <Mail className="w-4 h-4 mr-2" />
                   <a
-                    href={`mailto:${member.email}`}
+                    href={`mailto:${user.email}`}
                     className="hover:text-primary-600 dark:hover:text-primary-400"
                   >
-                    {member.email}
+                    {user.email}
                   </a>
                 </div>
               )}
-              {member.phone && (
+              {user.phone && (
                 <div className="flex items-center justify-center text-gray-600 dark:text-gray-400">
                   <Phone className="w-4 h-4 mr-2" />
                   <a
-                    href={`tel:${member.phone}`}
+                    href={`tel:${user.phone}`}
                     className="hover:text-primary-600 dark:hover:text-primary-400"
                   >
-                    {member.phone}
+                    {user.phone}
                   </a>
                 </div>
               )}

@@ -11,7 +11,6 @@ import {
   Link as LinkIcon,
   Settings as SettingsIcon
 } from "lucide-react";
-import { Users as UsersIcon } from "lucide-react";
 
 export default function Dashboard() {
   const { user } = useContext(AppContext);
@@ -32,7 +31,7 @@ export default function Dashboard() {
   useEffect(() => {
     fetch("http://127.0.0.1:8000/api/dashboard-stats", {
       headers: {
-        Authorization: `Bearer ${user.token}`, // if using token auth
+        Authorization: `Bearer ${user.token}`,
         Accept: "application/json"
       }
     })
@@ -77,15 +76,10 @@ export default function Dashboard() {
       icon: LinkIcon,
       link: "/dashboard/links",
       color: "red"
-    },
-    {
-      title: "Manage Users",
-      icon: UsersIcon,
-      link: "/dashboard/users",
-      color: "indigo"
     }
   ];
 
+  // Add system settings only for admin
   if (user.role === 'admin') {
     adminSections.push({
       title: t('System Settings'),
@@ -97,8 +91,9 @@ export default function Dashboard() {
 
   // Filter sections based on role
   const filteredSections = adminSections.filter(section => {
-    if (section.title === "Manage Users" && user.role !== "admin") {
-      return false; // hide Manage Users for non-admins
+    // Hide "Manage Staff" for librarians
+    if (section.title === t('manageStaff') && user.role !== "admin") {
+      return false;
     }
     return true;
   });
@@ -136,8 +131,8 @@ export default function Dashboard() {
             System Status
           </h3>
           <span className={`badge text-lg ${user.role === "admin"
-              ? "badge-success" // green for admin
-              : "badge-warning" // yellow for librarian
+              ? "badge-success"
+              : "badge-warning"
             }`}>
             {user.role === "admin" ? "All Systems Operational" : "Some Systems Operational"}
           </span>
@@ -154,8 +149,7 @@ export default function Dashboard() {
             purple: "bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400",
             blue: "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400",
             red: "bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400",
-            gray: "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400",
-            indigo: "bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400"
+            gray: "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
           };
 
           return (
