@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "../Components/LanguageSwitcher";
 import ThemeToggle from "../Components/ThemeToggle";
 import { Menu, X, BookOpen, Search as SearchIcon } from "lucide-react";
+import * as Icons from "lucide-react"; // for dynamic icons
 import LoadingSpinner from "../Components/LoadingSpinner";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -174,7 +175,7 @@ export default function Layout() {
         });
         if (!res.ok) throw new Error("Failed to fetch menu");
         const data = await res.json();
-        setMenuItems(data);
+        setMenuItems(data.filter(item => !item.hidden)); // only show non-hidden items
       } catch (err) {
         console.error("Error fetching menu:", err);
       } finally {
@@ -208,9 +209,10 @@ export default function Layout() {
   const activeClass = ({ isActive }) =>
     `nav-link px-3 py-1 rounded ${isActive ? "bg-primary-500 text-white" : ""}`;
 
+  // Replace renderMenu to only show active items
   const renderMenu = (items, parentId = null) =>
     items
-      .filter((item) => item.parent_id === parentId)
+      .filter((item) => item.parent_id === parentId && item.is_active) // <-- Only active
       .map((item) => {
         const children = renderMenu(items, item.id);
         if (children.length > 0) {

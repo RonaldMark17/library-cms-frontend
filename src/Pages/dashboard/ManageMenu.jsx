@@ -1,6 +1,6 @@
 import { useState, useContext } from "react";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Plus, Edit, Trash2, X, MoveUp, MoveDown } from "lucide-react";
+import { ArrowLeft, Plus, Edit, X, MoveUp, MoveDown, Eye, EyeOff } from "lucide-react";
 import { Link, useOutletContext } from "react-router-dom";
 import { AppContext } from "../../Context/AppContext";
 
@@ -10,7 +10,7 @@ export default function ManageMenu() {
   const { menuItems, setMenuItems } = useOutletContext();
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [submitting, setSubmitting] = useState(false); // <-- Loading state
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     label: { en: "" },
     url: "",
@@ -57,7 +57,7 @@ export default function ManageMenu() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setSubmitting(true); // <-- Start loading
+    setSubmitting(true);
     setMessage("");
 
     try {
@@ -90,23 +90,24 @@ export default function ManageMenu() {
       console.error(error);
       setMessage(t("errorSavingMenu"));
     } finally {
-      setSubmitting(false); // <-- Stop loading
+      setSubmitting(false);
     }
   }
 
-  async function handleDelete(id) {
-    if (!confirm(t("confirmDeleteMenu"))) return;
+  async function handleToggleActive(id) {
     try {
-      const res = await fetch(`${API_URL}/menu-items/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`${API_URL}/menu-items/toggle-active/${id}`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (res.ok) {
-        setMenuItems(menuItems.filter(item => item.id !== id));
-        setMessage(t("menuDeleted"));
-      } else {
-        setMessage(t("errorDeletingMenu"));
+        const data = await res.json();
+        setMenuItems(menuItems.map(item => item.id === id ? data.menuItem : item));
+        setMessage(data.message);
       }
     } catch (error) {
       console.error(error);
-      setMessage(t("errorDeletingMenu"));
+      setMessage(t("errorTogglingMenu"));
     }
   }
 
@@ -156,7 +157,7 @@ export default function ManageMenu() {
       <div className="card">
         <div className="space-y-2">
           {menuItems.map((item, index) => (
-            <div key={item.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <div key={item.id} className={`flex items-center justify-between p-4 rounded-lg ${item.is_active ? "bg-gray-50 dark:bg-gray-700" : "bg-gray-200 dark:bg-gray-600 opacity-70"}`}>
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-900 dark:text-white">{item.label.en}</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">{item.type} • {item.url || t("noURL")}</p>
@@ -165,13 +166,20 @@ export default function ManageMenu() {
                 <button onClick={() => moveItem(index, "up")} disabled={index === 0} className="secondary-btn p-2 disabled:opacity-50"><MoveUp className="w-4 h-4" /></button>
                 <button onClick={() => moveItem(index, "down")} disabled={index === menuItems.length - 1} className="secondary-btn p-2 disabled:opacity-50"><MoveDown className="w-4 h-4" /></button>
                 <button onClick={() => startEditing(item)} className="secondary-btn p-2"><Edit className="w-4 h-4" /></button>
-                <button onClick={() => handleDelete(item.id)} className="danger-btn p-2"><Trash2 className="w-4 h-4" /></button>
+                <button
+                  onClick={() => handleToggleActive(item.id)}
+                  className="danger-btn p-2"
+                  title={item.is_active ? t("hideMenuItem") : t("unhideMenuItem")}
+                >
+                  {item.is_active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                </button>
               </div>
             </div>
           ))}
         </div>
       </div>
 
+      {/* Modal Form */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl">
@@ -231,11 +239,7 @@ export default function ManageMenu() {
               </div>
 
               <div className="flex justify-end space-x-2">
-                <button
-                  type="button"
-                  onClick={() => { setShowModal(false); resetForm(); }}
-                  className="secondary-btn px-4 py-2"
-                >
+                <button type="button" onClick={() => { setShowModal(false); resetForm(); }} className="secondary-btn px-4 py-2">
                   {t("cancel")}
                 </button>
                 <button type="submit" className="primary-btn px-4 py-2" disabled={submitting}>
