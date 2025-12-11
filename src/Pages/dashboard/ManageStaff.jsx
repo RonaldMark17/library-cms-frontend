@@ -93,21 +93,21 @@ export default function ManageStaff() {
 
   // Delete staff member
   async function handleDelete(id) {
-    if (!confirm(t("confirmDeleteStaff"))) return;
+    if (!confirm(t("Confirm Delete Staff"))) return;
     try {
       const res = await fetch(`${API_URL}/staff-members/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
-        setMessage(t("staffDeleted"));
+        setMessage(t("Staff Deleted"));
         fetchStaff();
       } else {
-        setMessage(t("errorDeletingStaff"));
+        setMessage(t("Error Deleting Staff"));
       }
     } catch (error) {
       console.error(error);
-      setMessage(t("errorDeletingStaff"));
+      setMessage(t("Error Deleting Staff"));
     }
   }
 
@@ -152,7 +152,7 @@ export default function ManageStaff() {
           <Link to="/dashboard" className="text-primary-600 dark:text-primary-400">
             <ArrowLeft className="w-6 h-6" />
           </Link>
-          <h1 className="title mb-0">{t("manageStaff")}</h1>
+          <h1 className="title mb-0">{t("Manage Staff")}</h1>
         </div>
         <button
           onClick={() => { resetForm(); setShowModal(true); }}

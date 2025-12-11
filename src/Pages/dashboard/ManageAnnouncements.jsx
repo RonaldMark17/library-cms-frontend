@@ -19,7 +19,7 @@ export default function ManageAnnouncements() {
     image: null,
   });
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false); // <-- submit loader
+  const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
 
   const API_URL = import.meta.env.VITE_API_URL;
@@ -68,14 +68,14 @@ export default function ManageAnnouncements() {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm(t("deleteConfirm"))) return;
+    if (!confirm(t("Delete Confirm"))) return;
     try {
       const res = await fetch(`${API_URL}/announcements/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
-        setMessage(t("announcementDeleted"));
+        setMessage(t("Announcement Deleted"));
         fetchAnnouncements();
       } else {
         const errorData = await res.json();
@@ -113,17 +113,17 @@ export default function ManageAnnouncements() {
       });
 
       if (res.ok) {
-        setMessage(editingId ? t("announcementUpdated") : t("announcementCreated"));
+        setMessage(editingId ? t("Announcement Updated") : t("Announcement Created"));
         setShowModal(false);
         resetForm();
         fetchAnnouncements();
       } else {
         const errorData = await res.json();
-        setMessage(errorData.message || t("errorSavingAnnouncement"));
+        setMessage(errorData.message || t("Error Saving Announcement"));
       }
     } catch (error) {
       console.error(error);
-      setMessage(t("errorSavingAnnouncement"));
+      setMessage(t("Error Saving Announcement"));
     } finally {
       setSubmitting(false);
     }
@@ -144,14 +144,14 @@ export default function ManageAnnouncements() {
           <Link to="/dashboard" className="text-primary-600 dark:text-primary-400">
             <ArrowLeft className="w-6 h-6" />
           </Link>
-          <h1 className="title mb-0">{t("manageAnnouncements")}</h1>
+          <h1 className="title mb-0">{t("Manage Announcements")}</h1>
         </div>
         <button
           onClick={() => { resetForm(); setShowModal(true); }}
           className="primary-btn flex items-center space-x-2"
         >
           <Plus className="w-5 h-5" />
-          <span>{t("addAnnouncement")}</span>
+          <span>{t("Add Announcement")}</span>
         </button>
       </div>
 
@@ -164,11 +164,16 @@ export default function ManageAnnouncements() {
       <div className="space-y-4">
         {announcements.map(a => (
           <div key={a.id} className="card flex gap-6">
-            <img
-              src={a.image_url || '/placeholder.jpg'}
-              alt={a.title.en}
-              className="w-48 h-32 object-cover rounded-lg"
-            />
+
+            {/* ✅ Only show image if it exists */}
+            {a.image_url && (
+              <img
+                src={a.image_url}
+                alt=""
+                className="w-48 h-32 object-cover rounded-lg"
+              />
+            )}
+
             <div className="flex-1">
               <div className="flex justify-between mb-2">
                 <span
@@ -198,8 +203,13 @@ export default function ManageAnnouncements() {
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{a.title.en}</h3>
               <p className="text-gray-600 dark:text-gray-400 line-clamp-2 mb-2">{a.content.en}</p>
               <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
-                <span className="flex items-center"><Calendar className="w-4 h-4 mr-1" />{new Date(a.published_at).toLocaleDateString()}</span>
-                {a.expires_at && <span>Expires: {new Date(a.expires_at).toLocaleDateString()}</span>}
+                <span className="flex items-center">
+                  <Calendar className="w-4 h-4 mr-1" />
+                  {new Date(a.published_at).toLocaleDateString()}
+                </span>
+                {a.expires_at && (
+                  <span>Expires: {new Date(a.expires_at).toLocaleDateString()}</span>
+                )}
               </div>
             </div>
           </div>
@@ -213,7 +223,10 @@ export default function ManageAnnouncements() {
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                 {editingId ? t("editAnnouncement") : t("addAnnouncement")}
               </h2>
-              <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+              <button
+                onClick={() => setShowModal(false)}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
                 <X className="w-6 h-6" />
               </button>
             </div>
@@ -296,13 +309,17 @@ export default function ManageAnnouncements() {
                   {submitting ? (
                     <div className="flex items-center justify-center space-x-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      <span>{editingId ? t("updating") : t("creating")}...</span>
+                      <span>{editingId ? t("Updating") : t("Creating")}...</span>
                     </div>
                   ) : (
                     editingId ? t("update") : t("create")
                   )}
                 </button>
-                <button type="button" onClick={() => setShowModal(false)} className="secondary-btn">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="secondary-btn"
+                >
                   {t("cancel")}
                 </button>
               </div>

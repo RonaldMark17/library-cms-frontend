@@ -26,7 +26,7 @@ export default function ManageLinks() {
       setLinks(data);
     } catch (error) {
       console.error(error);
-      setMessage(t("errorFetchingLinks"));
+      setMessage(t("Error Fetching Links"));
     } finally { setLoading(false); }
   }
 
@@ -48,28 +48,28 @@ export default function ManageLinks() {
       });
 
       if (res.ok) {
-        setMessage(editingId ? t("linkUpdated") : t("linkCreated"));
+        setMessage(editingId ? t("Link Updated") : t("Link Created"));
         setShowModal(false);
         resetForm();
         fetchLinks();
       } else {
-        setMessage(t("errorSavingLink"));
+        setMessage(t("Error Saving Link"));
       }
     } catch (error) {
       console.error(error);
-      setMessage(t("errorSavingLink"));
+      setMessage(t("Error Saving Link"));
     } finally {
       setSubmitting(false); // <-- stop loading
     }
   }
 
   async function handleDelete(id) {
-    if (!confirm(t("confirmDeleteLink"))) return;
+    if (!confirm(t("Confirm Delete Link"))) return;
     try {
       const res = await fetch(`${API_URL}/external-links/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
-      if (res.ok) { setMessage(t("linkDeleted")); fetchLinks(); } 
-      else setMessage(t("errorDeletingLink"));
-    } catch (error) { console.error(error); setMessage(t("errorDeletingLink")); }
+      if (res.ok) { setMessage(t("Link Deleted")); fetchLinks(); } 
+      else setMessage(t("Error Deleting Link"));
+    } catch (error) { console.error(error); setMessage(t("Error Deleting Link")); }
   }
 
   if (loading) return <div className="flex justify-center items-center min-h-[400px]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div></div>;
@@ -81,7 +81,7 @@ export default function ManageLinks() {
           <Link to="/dashboard" className="text-primary-600 dark:text-primary-400"><ArrowLeft className="w-6 h-6" /></Link>
           <h1 className="title mb-0">{t("manageExternalLinks")}</h1>
         </div>
-        <button onClick={() => { resetForm(); setShowModal(true); }} className="primary-btn flex items-center space-x-2"><Plus className="w-5 h-5" /><span>{t("addLink")}</span></button>
+        <button onClick={() => { resetForm(); setShowModal(true); }} className="primary-btn flex items-center space-x-2"><Plus className="w-5 h-5" /><span>{t("Add Link")}</span></button>
       </div>
 
       {message && <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg p-4"><p className="text-primary-600 dark:text-primary-400">{message}</p></div>}
@@ -110,7 +110,7 @@ export default function ManageLinks() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{editingId ? t("editLink") : t("addLink")}</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{editingId ? t("Edit Link") : t("Add Link")}</h2>
               <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700"><X className="w-6 h-6" /></button>
             </div>
 
@@ -141,10 +141,10 @@ export default function ManageLinks() {
                   {submitting ? (
                     <div className="flex items-center justify-center space-x-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      <span>{editingId ? t("updating") : t("saving")}...</span>
+                      <span>{editingId ? t("Updating") : t("Saving")}...</span>
                     </div>
                   ) : (
-                    editingId ? t("update") : t("create")
+                    editingId ? t("Update") : t("Create")
                   )}
                 </button>
               </div>

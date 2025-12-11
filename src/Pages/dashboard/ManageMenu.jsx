@@ -76,19 +76,19 @@ export default function ManageMenu() {
         const savedItem = await res.json();
         if (editingId) {
           setMenuItems(menuItems.map(item => item.id === editingId ? savedItem : item));
-          setMessage(t("menuUpdated"));
+          setMessage(t("Menu Updated"));
         } else {
           setMenuItems([...menuItems, savedItem]);
-          setMessage(t("menuCreated"));
+          setMessage(t("Menu Created"));
         }
         setShowModal(false);
         resetForm();
       } else {
-        setMessage(t("errorSavingMenu"));
+        setMessage(t("Error Saving Menu"));
       }
     } catch (error) {
       console.error(error);
-      setMessage(t("errorSavingMenu"));
+      setMessage(t("Error Saving Menu"));
     } finally {
       setSubmitting(false);
     }
@@ -107,7 +107,7 @@ export default function ManageMenu() {
       }
     } catch (error) {
       console.error(error);
-      setMessage(t("errorTogglingMenu"));
+      setMessage(t("Error Toggling Menu"));
     }
   }
 
@@ -120,11 +120,11 @@ export default function ManageMenu() {
       });
       if (res.ok) {
         setMenuItems(items.map(orderItem => menuItems.find(item => item.id === orderItem.id)));
-        setMessage(t("menuReordered"));
+        setMessage(t("Menu Reordered"));
       }
     } catch (error) {
       console.error(error);
-      setMessage(t("errorReorderingMenu"));
+      setMessage(t("Error Reordering Menu"));
     }
   }
 
@@ -144,11 +144,11 @@ export default function ManageMenu() {
           <Link to="/dashboard" className="text-primary-600 dark:text-primary-400">
             <ArrowLeft className="w-6 h-6" />
           </Link>
-          <h1 className="title mb-0">{t("manageMenu")}</h1>
+          <h1 className="title mb-0">{t("Manage Menu")}</h1>
         </div>
         <button onClick={() => { resetForm(); setShowModal(true); }} className="primary-btn flex items-center space-x-2">
           <Plus className="w-5 h-5" />
-          <span>{t("addMenuItem")}</span>
+          <span>{t("Add Menu Item")}</span>
         </button>
       </div>
 
@@ -169,7 +169,7 @@ export default function ManageMenu() {
                 <button
                   onClick={() => handleToggleActive(item.id)}
                   className="danger-btn p-2"
-                  title={item.is_active ? t("hideMenuItem") : t("unhideMenuItem")}
+                  title={item.is_active ? t("Hide Menu Item") : t("Unhide Menu Item")}
                 >
                   {item.is_active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                 </button>
@@ -246,10 +246,10 @@ export default function ManageMenu() {
                   {submitting ? (
                     <div className="flex items-center space-x-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      <span>{editingId ? t("updating") : t("saving")}...</span>
+                      <span>{editingId ? t("Updating") : t("Saving")}...</span>
                     </div>
                   ) : (
-                    editingId ? t("update") : t("save")
+                    editingId ? t("Update") : t("Save")
                   )}
                 </button>
               </div>

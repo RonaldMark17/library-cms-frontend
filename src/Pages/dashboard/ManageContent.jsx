@@ -160,14 +160,14 @@ export default function ManageContent() {
             ) : (
               <div className="space-y-4">
                 <div>
-                  <p className="font-medium text-gray-900 dark:text-white">{t("english")}:</p>
+                  <p className="font-medium text-gray-900 dark:text-white">{t("English")}:</p>
                   <p className="text-gray-700 dark:text-white">{section.content.en}</p>
                 </div>
 
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">{t("tagalog")}:</p>
-                  <p className="text-gray-700 dark:text-white">{section.content.tl || t("notSet")}</p>
-                </div>
+                {/* <div>
+                  <p className="font-medium text-gray-900 dark:text-white">{t("Tagalog")}:</p>
+                  <p className="text-gray-700 dark:text-white">{section.content.tl || t("Not set")}</p>
+                </div> */}
               </div>
             )}
           </div>

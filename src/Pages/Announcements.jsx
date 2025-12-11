@@ -29,31 +29,65 @@ export default function Announcements() {
 
   const lang = i18n.language;
 
-  if (loading) return <div className="flex justify-center items-center min-h-[400px]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div></div>;
+  if (loading) return (
+    <div className="flex justify-center items-center min-h-[400px]">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+    </div>
+  );
 
   return (
     <div className="space-y-8">
       <div className="text-center">
         <h1 className="title">{t('latestNews')}</h1>
       </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {announcements.map(a => (
-          <div key={a.id} className="card p-4 flex flex-col space-y-4">
-            <img
-              src={a.image_url || '/placeholder.jpg'}
-              className="w-full h-48 object-cover rounded-lg"
-              alt={a.title[lang] || a.title.en}
-            />
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-                <span className="flex items-center gap-1"><Tag className="w-4 h-4" />{a.priority}</span>
-                <span className="flex items-center gap-1"><Calendar className="w-4 h-4" />{new Date(a.published_at).toLocaleDateString()}</span>
+          <div key={a.id} className="card p-4 flex flex-col h-full">
+
+            {/* Image container */}
+            {a.image_url ? (
+              <img
+                src={a.image_url}
+                className="w-full h-48 object-cover rounded-lg mb-4"
+                alt={a.title[lang] || a.title.en}
+              />
+            ) : (
+              // Empty placeholder div that centers content
+              <div className="w-full h-48 mb-4 flex items-center justify-center bg-gray-800/20 dark:bg-gray-700 rounded-lg">
+                {/* Optional: You can put an icon or text here */}
               </div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">{a.title[lang] || a.title.en}</h3>
-              <p className="text-gray-600 dark:text-gray-400">{a.content[lang] || a.content.en}</p>
-              <Link to={`/announcements/${a.id}`} className="text-primary-600 dark:text-primary-400 font-semibold">{t('readMore')}</Link>
+            )}
+
+            {/* Content section */}
+            <div className={`flex flex-col ${!a.image_url ? "justify-center flex-1" : "flex-1"}`}>
+              <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-2">
+                <span className="flex items-center gap-1">
+                  <Tag className="w-4 h-4" />{a.priority}
+                </span>
+                <span className="flex items-center gap-1">
+                  <Calendar className="w-4 h-4" />{new Date(a.published_at).toLocaleDateString()}
+                </span>
+              </div>
+
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                {a.title[lang] || a.title.en}
+              </h3>
+
+              <p className="text-gray-600 dark:text-gray-400 flex-1">
+                {a.content[lang] || a.content.en}
+              </p>
+
+              <Link
+                to={`/announcements/${a.id}`}
+                className="text-primary-600 dark:text-primary-400 font-semibold mt-4"
+              >
+                {t('readMore')}
+              </Link>
             </div>
+
           </div>
+
         ))}
       </div>
     </div>

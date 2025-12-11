@@ -7,7 +7,7 @@ export default function Unsubscribe() {
   const navigate = useNavigate();
   const token = searchParams.get("token");
 
-  const [status, setStatus] = useState("loading"); // loading, success, error, info
+  const [status, setStatus] = useState("loading");
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -48,30 +48,34 @@ export default function Unsubscribe() {
 
   return (
     <div className="max-w-md mx-auto mt-12">
-      <div className="card text-center p-6 shadow rounded">
+      <div className="card text-center p-6 shadow rounded bg-white dark:bg-gray-900 dark:text-white">
+        
         {status === "loading" && (
           <>
             <Loader className={`${iconProps} text-blue-600 animate-spin`} />
-            <h2 className="text-2xl font-bold mb-2">Processing...</h2>
-            <p>Please wait while we unsubscribe you...</p>
+            <h2 className="text-2xl font-bold mb-2 dark:text-white">Processing...</h2>
+            <p className="dark:text-gray-300">Please wait while we unsubscribe you...</p>
           </>
         )}
 
         {status === "success" && (
           <>
             <CheckCircle className={`${iconProps} text-green-600`} />
-            <h2 className="text-2xl font-bold mb-2">Unsubscribed!</h2>
-            <p>{message}</p>
-            <p className="text-sm text-gray-500">Redirecting to homepage...</p>
+            <h2 className="text-2xl font-bold mb-2 dark:text-white">Unsubscribed!</h2>
+            <p className="dark:text-gray-300">{message}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Redirecting to homepage...</p>
           </>
         )}
 
         {status === "error" && (
           <>
             <XCircle className={`${iconProps} text-red-600`} />
-            <h2 className="text-2xl font-bold mb-2">Error</h2>
-            <p>{message}</p>
-            <button onClick={() => navigate("/")} className="mt-4 px-4 py-2 bg-blue-600 text-white rounded">
+            <h2 className="text-2xl font-bold mb-2 dark:text-white">Error</h2>
+            <p className="dark:text-gray-300">{message}</p>
+            <button
+              onClick={() => navigate("/")}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
+            >
               Go to Home
             </button>
           </>
@@ -80,9 +84,9 @@ export default function Unsubscribe() {
         {status === "info" && (
           <>
             <CheckCircle className={`${iconProps} text-blue-600`} />
-            <h2 className="text-2xl font-bold mb-2">Notice</h2>
-            <p>{message}</p>
-            <p className="text-sm text-gray-500">Redirecting to homepage...</p>
+            <h2 className="text-2xl font-bold mb-2 dark:text-white">Notice</h2>
+            <p className="dark:text-gray-300">{message}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Redirecting to homepage...</p>
           </>
         )}
       </div>

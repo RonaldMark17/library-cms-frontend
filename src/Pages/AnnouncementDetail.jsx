@@ -30,24 +30,23 @@ export default function AnnouncementDetail() {
 
   const currentLang = i18n.language;
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="flex justify-center items-center min-h-[400px]">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+    </div>
+  );
 
   if (!announcement) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-600 dark:text-gray-400">{t('announcementNotFound') || 'Announcement not found'}</p>
+        <p className="text-gray-600 dark:text-gray-400">
+          {t('announcementNotFound') || 'Announcement not found'}
+        </p>
       </div>
     );
   }
 
-  // Use image_url if available, fallback to placeholder
-  const imageSrc = announcement.image_url || '/placeholder.jpg';
+  const hasImage = Boolean(announcement.image_url);
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -60,11 +59,15 @@ export default function AnnouncementDetail() {
       </button>
 
       <div className="card">
-        <img
-          src={imageSrc}
-          alt={announcement.title[currentLang] || announcement.title.en}
-          className="w-full h-96 object-cover rounded-lg mb-6"
-        />
+
+        {/* ✅ Only show image if available */}
+        {hasImage && (
+          <img
+            src={announcement.image_url}
+            alt={announcement.title[currentLang] || announcement.title.en}
+            className="w-full h-96 object-cover rounded-lg mb-6"
+          />
+        )}
 
         <div className="flex flex-wrap items-center gap-3 mb-4">
           <span className={`badge ${
@@ -75,6 +78,7 @@ export default function AnnouncementDetail() {
             <Tag className="w-3 h-3 inline mr-1" />
             {announcement.priority}
           </span>
+
           <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
             <Calendar className="w-4 h-4 mr-1" />
             {new Date(announcement.published_at).toLocaleDateString(
@@ -82,6 +86,7 @@ export default function AnnouncementDetail() {
               { year: 'numeric', month: 'long', day: 'numeric' }
             )}
           </span>
+
           {announcement.creator && (
             <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
               <User className="w-4 h-4 mr-1" />

@@ -36,7 +36,7 @@ export default function ManagePages() {
       setPages(data);
     } catch (error) {
       console.error(error);
-      setMessage(t("errorFetchingPages"));
+      setMessage(t("Error Fetching Pages"));
     } finally {
       setLoading(false);
     }
@@ -58,37 +58,37 @@ export default function ManagePages() {
       });
 
       if (res.ok) {
-        setMessage(editingId ? t("pageUpdated") : t("pageCreated"));
+        setMessage(editingId ? t("Page Updated") : t("Page Created"));
         setShowModal(false);
         resetForm();
         fetchPages();
       } else {
-        setMessage(t("errorSavingPage"));
+        setMessage(t("Error Saving Page"));
       }
     } catch (error) {
       console.error(error);
-      setMessage(t("errorSavingPage"));
+      setMessage(t("Error Saving Page"));
     } finally {
       setSubmitting(false); // <-- Stop loading
     }
   }
 
   async function handleDelete(id) {
-    if (!confirm(t("confirmDeletePage"))) return;
+    if (!confirm(t("Confirm Delete Page"))) return;
     try {
       const res = await fetch(`${API_URL}/pages/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
-        setMessage(t("pageDeleted"));
+        setMessage(t("Page Deleted"));
         fetchPages();
       } else {
-        setMessage(t("errorDeletingPage"));
+        setMessage(t("Error Deleting Page"));
       }
     } catch (error) {
       console.error(error);
-      setMessage(t("errorDeletingPage"));
+      setMessage(t("Error Deleting Page"));
     }
   }
 
@@ -124,11 +124,11 @@ export default function ManagePages() {
           <Link to="/dashboard" className="text-primary-600 dark:text-primary-400">
             <ArrowLeft className="w-6 h-6" />
           </Link>
-          <h1 className="title mb-0">{t("managePages")}</h1>
+          <h1 className="title mb-0">{t("Manage Pages")}</h1>
         </div>
         <button onClick={() => { resetForm(); setShowModal(true); }} className="primary-btn flex items-center space-x-2">
           <Plus className="w-5 h-5" />
-          <span>{t("addPage")}</span>
+          <span>{t("Add Page")}</span>
         </button>
       </div>
 
@@ -195,10 +195,10 @@ export default function ManagePages() {
                   {submitting ? (
                     <div className="flex items-center space-x-2 justify-center">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      <span>{editingId ? t("updating") : t("saving")}...</span>
+                      <span>{editingId ? t("Updating") : t("Saving")}...</span>
                     </div>
                   ) : (
-                    editingId ? t("update") : t("create")
+                    editingId ? t("Update") : t("Create")
                   )}
                 </button>
               </div>
