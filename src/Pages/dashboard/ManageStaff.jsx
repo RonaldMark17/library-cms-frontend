@@ -38,7 +38,7 @@ export default function ManageUsers() {
     try {
       const res = await fetch(`${API_URL}/users`, {
         headers: { Authorization: `Bearer ${token}` },
-        
+
       });
       if (!res.ok) throw new Error("Failed to fetch users");
       const data = await res.json();
@@ -79,7 +79,7 @@ export default function ManageUsers() {
       const res = await fetch(url, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
-        
+
         body: payload,
       });
 
@@ -102,27 +102,27 @@ export default function ManageUsers() {
   }
 
   async function handleToggleDisable(id) {
-  if (!window.confirm(t("Confirm Toggle User"))) return;
+    if (!window.confirm(t("Confirm Toggle User"))) return;
 
-  try {
-    const res = await fetch(`${API_URL}/users/${id}/toggle-disable`, {
-      method: "PATCH",
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    try {
+      const res = await fetch(`${API_URL}/users/${id}/toggle-disable`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (res.ok) {
-      setMessage(data.message);
-      fetchUsers();
-    } else {
-      setMessage(data.message || t("Error Updating User"));
+      if (res.ok) {
+        setMessage(data.message);
+        fetchUsers();
+      } else {
+        setMessage(data.message || t("Error Updating User"));
+      }
+    } catch (error) {
+      console.error(error);
+      setMessage(t("Error Updating User"));
     }
-  } catch (error) {
-    console.error(error);
-    setMessage(t("Error Updating User"));
   }
-}
 
 
   const resetForm = () => {
@@ -209,7 +209,10 @@ export default function ManageUsers() {
               </div>
             )}
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{user.name}</h3>
-            <p className="text-primary-600 dark:text-primary-400 mb-2">{user.role}</p>
+            <p className="text-primary-600 dark:text-primary-400 mb-2">
+              {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+            </p>
+
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{user.email}</p>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{user.bio?.[currentLocale] || ""}</p>
             {user.disabled && <span className="text-red-600 font-semibold text-sm mb-2 block">Disabled</span>}

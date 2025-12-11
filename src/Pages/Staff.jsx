@@ -12,6 +12,8 @@ export default function Staff() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const currentLang = i18n.language;
+
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -42,8 +44,6 @@ export default function Staff() {
       setLoading(false);
     }
   }
-
-  const currentLang = i18n.language;
 
   if (loading) {
     return (
@@ -81,6 +81,7 @@ export default function Staff() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {users.map((user) => (
           <div key={user.id} className="card text-center hover:shadow-lg transition-shadow">
+            {/* User Image */}
             <div className="mb-4">
               {user.image_path ? (
                 <img
@@ -95,20 +96,31 @@ export default function Staff() {
               )}
             </div>
 
+            {/* Name */}
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
               {typeof user.name === "string" ? user.name : user.name?.[currentLang] || user.name?.en || ""}
             </h3>
 
-            <p className="text-primary-600 dark:text-primary-400 font-medium mb-4">
-              {user.role?.[currentLang] || user.role?.en || ""}
-            </p>
+            {/* Role Badge */}
+            {user.role && (
+              <span className="inline-block bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 text-xs px-3 py-1 rounded-full mb-4">
+                {(() => {
+                  const role = typeof user.role === "string" ? user.role : user.role?.[currentLang] || user.role?.en;
+                  return role ? role.charAt(0).toUpperCase() + role.slice(1) : "";
+                })()}
+              </span>
+            )}
 
+
+
+            {/* Bio */}
             {user.bio && (
               <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
                 {user.bio?.[currentLang] || user.bio?.en || ""}
               </p>
             )}
 
+            {/* Contact Info */}
             <div className="space-y-2 text-sm">
               {user.email && (
                 <div className="flex items-center justify-center text-gray-600 dark:text-gray-400">
