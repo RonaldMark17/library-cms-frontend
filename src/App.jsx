@@ -4,7 +4,6 @@ import { AppContext } from "./Context/AppContext";
 import "./App.css";
 import "./i18n/config";
 
-
 // Layout
 import Layout from "./Pages/Layout";
 
@@ -19,10 +18,10 @@ import Subscribe from "./Pages/Subscribe";
 import Search from "./Pages/Search";
 import PageView from "./Pages/PageView";
 import VerifySubscription from "./Pages/VerifySubscription";
-import SubscriptionStatus from "./Pages/SubscriptionStatus"; // NEW
+import SubscriptionStatus from "./Pages/SubscriptionStatus";
 import ForgotPassword from "./Pages/Auth/ForgotPassword";
 import ResetPassword from "./Pages/Auth/ResetPassword";
-
+import Unsubscribe from "./Pages/Unsubscribe";
 
 // Auth Pages
 import Login from "./Pages/Auth/Login";
@@ -90,7 +89,8 @@ export default function App() {
           <Route path="search" element={<Search />} />
           <Route path="pages/:slug" element={<PageView />} />
           <Route path="verify-subscription" element={<VerifySubscription />} />
-          <Route path="subscription-status" element={<SubscriptionStatus />} /> {/* NEW */}
+          <Route path="subscription-status" element={<SubscriptionStatus />} />
+          <Route path="unsubscribe" element={<Unsubscribe />} />
 
           {/* Auth (Only when NOT logged in) */}
           <Route
