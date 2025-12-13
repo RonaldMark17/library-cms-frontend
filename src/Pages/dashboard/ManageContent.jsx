@@ -90,7 +90,7 @@ export default function ManageContent() {
           >
             <ArrowLeft className="w-6 h-6" />
           </Link>
-          <h1 className="title mb-0">{t("manageContent")}</h1>
+          <h1 className="title mb-0">{t("Manage Content")}</h1>
         </div>
       </div>
 

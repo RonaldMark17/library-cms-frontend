@@ -23,29 +23,31 @@ export default function ManageAnnouncements() {
     image: null,
   });
 
-  const [loading, setLoading] = useState(true);
+  const [listLoading, setListLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [message, setMessage] = useState(null); // { type: 'success' | 'error', text }
 
   const API_URL = import.meta.env.VITE_API_URL;
-
-  // Get today's date in YYYY-MM-DD format
   const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
     fetchAnnouncements();
   }, []);
 
+  // Fetch announcements
   async function fetchAnnouncements() {
+    setListLoading(true);
     try {
       const res = await fetch(`${API_URL}/announcements`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       setAnnouncements(data.data || data);
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
+      setMessage({ type: "error", text: t("Failed to load announcements") });
     } finally {
-      setLoading(false);
+      setListLoading(false);
     }
   }
 
@@ -83,15 +85,18 @@ export default function ManageAnnouncements() {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
+      setMessage({ type: "success", text: t("Announcement deleted") });
       fetchAnnouncements();
     } catch (err) {
       console.error(err);
+      setMessage({ type: "error", text: t("Delete failed") });
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
+    setMessage(null);
 
     const formToSend = new FormData();
     Object.entries(formData).forEach(([key, val]) => {
@@ -104,10 +109,19 @@ export default function ManageAnnouncements() {
         ? `${API_URL}/announcements/${editingId}`
         : `${API_URL}/announcements`;
 
-      await fetch(url, {
+      const res = await fetch(url, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formToSend,
+      });
+
+      if (!res.ok) throw new Error();
+
+      setMessage({
+        type: "success",
+        text: editingId
+          ? t("Announcement updated successfully")
+          : t("Announcement published successfully"),
       });
 
       setShowModal(false);
@@ -115,18 +129,11 @@ export default function ManageAnnouncements() {
       fetchAnnouncements();
     } catch (err) {
       console.error(err);
+      setMessage({ type: "error", text: t("Something went wrong") });
     } finally {
       setSubmitting(false);
     }
   };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -150,65 +157,80 @@ export default function ManageAnnouncements() {
         </button>
       </div>
 
+      {/* Message */}
+      
+      {message && <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg p-4"><p className="text-primary-600 dark:text-primary-400">{message.text}</p></div>}
+
       {/* List */}
-      <div className="space-y-4">
-        {announcements.map((a) => {
-          const isExpired = a.expires_at && new Date(a.expires_at) < new Date();
-          if (isExpired) return null; // hide expired
-          return (
-            <div key={a.id} className="card flex gap-6">
-              {a.image_url && (
-                <img
-                  src={a.image_url}
-                  alt=""
-                  className="w-48 h-32 object-cover rounded-lg"
-                />
-              )}
-              <div className="flex-1">
-                <div className="flex justify-between mb-2">
-                  <span
-                    className={`badge ${
-                      a.priority === "high"
-                        ? "badge-danger"
-                        : a.priority === "medium"
-                        ? "badge-warning"
-                        : "badge-success"
-                    }`}
-                  >
-                    {a.priority.charAt(0).toUpperCase() + a.priority.slice(1)}
-                  </span>
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => startEditing(a)}
-                      className="secondary-btn"
+      {listLoading ? (
+        <div className="flex justify-center py-20">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-600"></div>
+        </div>
+      ) : announcements.length === 0 ? (
+        <div className="text-center py-20 text-gray-500 dark:text-gray-400">
+          {t("No announcements found")}
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {announcements.map((a) => {
+            const isExpired =
+              a.expires_at && new Date(a.expires_at) < new Date();
+            if (isExpired) return null;
+
+            return (
+              <div key={a.id} className="card flex gap-6">
+                {a.image_url && (
+                  <img
+                    src={a.image_url}
+                    alt=""
+                    className="w-48 h-32 object-cover rounded-lg"
+                  />
+                )}
+                <div className="flex-1">
+                  <div className="flex justify-between mb-2">
+                    <span
+                      className={`badge ${a.priority === "high"
+                          ? "badge-danger"
+                          : a.priority === "medium"
+                            ? "badge-warning"
+                            : "badge-success"
+                        }`}
                     >
-                      <Edit className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(a.id)}
-                      className="danger-btn"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                      {a.priority.charAt(0).toUpperCase() + a.priority.slice(1)}
+                    </span>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => startEditing(a)}
+                        className="secondary-btn"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(a.id)}
+                        className="danger-btn"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <h3 className="text-xl font-bold dark:text-white">
+                    {a.title.en}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 line-clamp-2">
+                    {a.content.en}
+                  </p>
+
+                  <div className="mt-2 text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                    <Calendar className="w-4 h-4 mr-1" />
+                    {new Date(a.published_at).toLocaleDateString()}
                   </div>
                 </div>
-
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                  {a.title.en}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 line-clamp-2">
-                  {a.content.en}
-                </p>
-
-                <div className="mt-2 text-sm text-gray-500 dark:text-gray-400 flex items-center">
-                  <Calendar className="w-4 h-4 mr-1" />
-                  {new Date(a.published_at).toLocaleDateString()}
-                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Add/Edit Modal */}
       {showModal && (
@@ -323,9 +345,12 @@ export default function ManageAnnouncements() {
               <div className="flex space-x-3 pt-4">
                 <button
                   type="submit"
-                  className="primary-btn flex-1"
+                  className="primary-btn flex-1 flex justify-center items-center gap-2"
                   disabled={submitting || !formData.title || !formData.content}
                 >
+                  {submitting && (
+                    <span className="animate-spin h-4 w-4 border-b-2 border-white rounded-full"></span>
+                  )}
                   {editingId ? t("Update") : t("Publish")}
                 </button>
 
@@ -363,13 +388,12 @@ export default function ManageAnnouncements() {
             )}
 
             <span
-              className={`badge ${
-                formData.priority === "high"
+              className={`badge ${formData.priority === "high"
                   ? "badge-danger"
                   : formData.priority === "medium"
-                  ? "badge-warning"
-                  : "badge-success"
-              }`}
+                    ? "badge-warning"
+                    : "badge-success"
+                }`}
             >
               {formData.priority.charAt(0).toUpperCase() + formData.priority.slice(1)}
             </span>
