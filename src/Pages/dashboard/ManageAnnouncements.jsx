@@ -1,14 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { AppContext } from "../../Context/AppContext";
 import { useTranslation } from "react-i18next";
-import {
-  ArrowLeft,
-  Plus,
-  Edit,
-  Trash2,
-  X,
-  Calendar,
-} from "lucide-react";
+import { ArrowLeft, Plus, Edit, Trash2, X, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function ManageAnnouncements() {
@@ -34,6 +27,9 @@ export default function ManageAnnouncements() {
   const [submitting, setSubmitting] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL;
+
+  // Get today's date in YYYY-MM-DD format
+  const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
     fetchAnnouncements();
@@ -156,58 +152,62 @@ export default function ManageAnnouncements() {
 
       {/* List */}
       <div className="space-y-4">
-        {announcements.map((a) => (
-          <div key={a.id} className="card flex gap-6">
-            {a.image_url && (
-              <img
-                src={a.image_url}
-                alt=""
-                className="w-48 h-32 object-cover rounded-lg"
-              />
-            )}
-            <div className="flex-1">
-              <div className="flex justify-between mb-2">
-                <span
-                  className={`badge ${
-                    a.priority === "high"
-                      ? "badge-danger"
-                      : a.priority === "medium"
-                      ? "badge-warning"
-                      : "badge-success"
-                  }`}
-                >
-                  {a.priority.charAt(0).toUpperCase() + a.priority.slice(1)}
-                </span>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => startEditing(a)}
-                    className="secondary-btn"
+        {announcements.map((a) => {
+          const isExpired = a.expires_at && new Date(a.expires_at) < new Date();
+          if (isExpired) return null; // hide expired
+          return (
+            <div key={a.id} className="card flex gap-6">
+              {a.image_url && (
+                <img
+                  src={a.image_url}
+                  alt=""
+                  className="w-48 h-32 object-cover rounded-lg"
+                />
+              )}
+              <div className="flex-1">
+                <div className="flex justify-between mb-2">
+                  <span
+                    className={`badge ${
+                      a.priority === "high"
+                        ? "badge-danger"
+                        : a.priority === "medium"
+                        ? "badge-warning"
+                        : "badge-success"
+                    }`}
                   >
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(a.id)}
-                    className="danger-btn"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                    {a.priority.charAt(0).toUpperCase() + a.priority.slice(1)}
+                  </span>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => startEditing(a)}
+                      className="secondary-btn"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(a.id)}
+                      className="danger-btn"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                  {a.title.en}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 line-clamp-2">
+                  {a.content.en}
+                </p>
+
+                <div className="mt-2 text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                  <Calendar className="w-4 h-4 mr-1" />
+                  {new Date(a.published_at).toLocaleDateString()}
                 </div>
               </div>
-
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                {a.title.en}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 line-clamp-2">
-                {a.content.en}
-              </p>
-
-              <div className="mt-2 text-sm text-gray-500 dark:text-gray-400 flex items-center">
-                <Calendar className="w-4 h-4 mr-1" />
-                {new Date(a.published_at).toLocaleDateString()}
-              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Add/Edit Modal */}
@@ -274,8 +274,16 @@ export default function ManageAnnouncements() {
                     className="input-field"
                     value={formData.published_at}
                     onChange={(e) =>
-                      setFormData({ ...formData, published_at: e.target.value })
+                      setFormData({
+                        ...formData,
+                        published_at: e.target.value,
+                        expires_at:
+                          formData.expires_at && formData.expires_at < e.target.value
+                            ? ""
+                            : formData.expires_at,
+                      })
                     }
+                    min={today}
                   />
                 </div>
 
@@ -288,6 +296,7 @@ export default function ManageAnnouncements() {
                     onChange={(e) =>
                       setFormData({ ...formData, expires_at: e.target.value })
                     }
+                    min={formData.published_at || today}
                   />
                 </div>
               </div>
