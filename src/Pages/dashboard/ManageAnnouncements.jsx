@@ -7,9 +7,7 @@ import {
   Edit,
   Trash2,
   X,
-  Upload,
   Calendar,
-  Eye,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -34,7 +32,6 @@ export default function ManageAnnouncements() {
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState("");
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -179,7 +176,7 @@ export default function ManageAnnouncements() {
                       : "badge-success"
                   }`}
                 >
-                  {a.priority}
+                  {a.priority.charAt(0).toUpperCase() + a.priority.slice(1)}
                 </span>
                 <div className="flex space-x-2">
                   <button
@@ -222,85 +219,103 @@ export default function ManageAnnouncements() {
                 {editingId ? t("Edit Announcement") : t("Add Announcement")}
               </h2>
               <button onClick={() => setShowModal(false)}>
-                <X />
+                <X className="dark:text-white" />
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <input
-                className="input-field"
-                placeholder={t("Title")}
-                value={formData.title}
-                onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
-                }
-                required
-              />
-
-              <textarea
-                className="input-field"
-                rows="5"
-                placeholder={t("Content")}
-                value={formData.content}
-                onChange={(e) =>
-                  setFormData({ ...formData, content: e.target.value })
-                }
-                required
-              />
-
-              <div className="grid grid-cols-3 gap-4">
-                <select
-                  className="input-field"
-                  value={formData.priority}
-                  onChange={(e) =>
-                    setFormData({ ...formData, priority: e.target.value })
-                  }
-                >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </select>
-
+              <div>
+                <label className="block mb-1 dark:text-white">{t("Title")}</label>
                 <input
-                  type="date"
                   className="input-field"
-                  value={formData.published_at}
+                  placeholder={t("Title")}
+                  value={formData.title}
                   onChange={(e) =>
-                    setFormData({ ...formData, published_at: e.target.value })
+                    setFormData({ ...formData, title: e.target.value })
                   }
-                />
-
-                <input
-                  type="date"
-                  className="input-field"
-                  value={formData.expires_at}
-                  onChange={(e) =>
-                    setFormData({ ...formData, expires_at: e.target.value })
-                  }
+                  required
                 />
               </div>
 
-              <input
-                type="file"
-                accept="image/*"
-                className="input-field"
-                onChange={(e) => {
-                  const file = e.target.files[0];
-                  setFormData({ ...formData, image: file });
-                  if (file) {
-                    const reader = new FileReader();
-                    reader.onloadend = () => setImagePreview(reader.result);
-                    reader.readAsDataURL(file);
+              <div>
+                <label className="block mb-1 dark:text-white">{t("Content")}</label>
+                <textarea
+                  className="input-field"
+                  rows="5"
+                  placeholder={t("Content")}
+                  value={formData.content}
+                  onChange={(e) =>
+                    setFormData({ ...formData, content: e.target.value })
                   }
-                }}
-              />
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="block mb-1 dark:text-white">{t("Priority")}</label>
+                  <select
+                    className="input-field"
+                    value={formData.priority}
+                    onChange={(e) =>
+                      setFormData({ ...formData, priority: e.target.value })
+                    }
+                  >
+                    <option value="low">{t("Low")}</option>
+                    <option value="medium">{t("Medium")}</option>
+                    <option value="high">{t("High")}</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block mb-1 dark:text-white">{t("Published At")}</label>
+                  <input
+                    type="date"
+                    className="input-field"
+                    value={formData.published_at}
+                    onChange={(e) =>
+                      setFormData({ ...formData, published_at: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="block mb-1 dark:text-white">{t("Expires At")}</label>
+                  <input
+                    type="date"
+                    className="input-field"
+                    value={formData.expires_at}
+                    onChange={(e) =>
+                      setFormData({ ...formData, expires_at: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block mb-1 dark:text-white">{t("Image")}</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="input-field"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    setFormData({ ...formData, image: file });
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => setImagePreview(reader.result);
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+              </div>
 
               {/* Buttons */}
               <div className="flex space-x-3 pt-4">
                 <button
                   type="submit"
                   className="primary-btn flex-1"
-                  disabled={submitting}
+                  disabled={submitting || !formData.title || !formData.content}
                 >
                   {editingId ? t("Update") : t("Publish")}
                 </button>
@@ -325,7 +340,7 @@ export default function ManageAnnouncements() {
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold dark:text-white">{t("Preview")}</h2>
               <button onClick={() => setShowPreview(false)}>
-                <X />
+                <X className="dark:text-white" />
               </button>
             </div>
 
@@ -347,7 +362,7 @@ export default function ManageAnnouncements() {
                   : "badge-success"
               }`}
             >
-              {formData.priority}
+              {formData.priority.charAt(0).toUpperCase() + formData.priority.slice(1)}
             </span>
 
             <h3 className="text-xl font-bold mt-3 dark:text-white">
