@@ -41,11 +41,21 @@ export default function Home() {
       sectionsData.forEach((section) => {
         sections[section.key] = section.content;
       });
-
       setContentSections(sections);
 
-      // Ensure announcements array exists
-      setAnnouncements(announcementsData.data || announcementsData);
+      // Filter active announcements only
+      const today = new Date();
+      let items = announcementsData.data || announcementsData;
+      items = items.filter((a) => {
+        const published = new Date(a.published_at);
+        const expires = a.expires_at ? new Date(a.expires_at) : null;
+        return published <= today && (!expires || expires >= today);
+      });
+
+      // Sort newest first
+      items.sort((a, b) => new Date(b.published_at) - new Date(a.published_at));
+
+      setAnnouncements(items);
     } catch (error) {
       console.error("Error fetching home data:", error);
     } finally {
@@ -120,7 +130,6 @@ export default function Home() {
       </section>
 
       {/* Latest Announcements */}
-      {/* Latest Announcements */}
       <section>
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white">{t("latestNews")}</h2>
@@ -134,51 +143,56 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {announcements
-            .filter(a => !a.expires_at || new Date(a.expires_at) >= new Date()) // Filter out expired
-            .map((announcement) => {
-              const imageSrc =
-                announcement.image_url ||
-                (announcement.image_path ? `${API_URL}/storage/${announcement.image_path}` : '/placeholder.jpg');
+          {announcements.map((announcement) => {
+            const imageSrc =
+              announcement.image_url ||
+              (announcement.image_path ? `${API_URL}/storage/${announcement.image_path}` : null);
 
-              return (
-                <div key={announcement.id} className="card hover:shadow-lg transition-shadow">
+            return (
+              <div key={announcement.id} className="card hover:shadow-lg transition-shadow">
+                {imageSrc ? (
                   <img
                     src={imageSrc}
-                    alt={announcement.title[currentLang] || announcement.title.en}
                     className="w-full h-48 object-cover rounded-lg mb-4"
+                    alt="" // don't show alt
                   />
-                  <div className="flex items-center space-x-2 mb-2">
-                    <span
-                      className={`badge ${announcement.priority === "high"
-                          ? "badge-danger"
-                          : announcement.priority === "medium"
-                            ? "badge-warning"
-                            : "badge-success"
-                        }`}
-                    >
-                      {announcement.priority.charAt(0).toUpperCase() + announcement.priority.slice(1)}
-                    </span>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(announcement.published_at).toLocaleDateString()}
-                    </span>
+                ) : (
+                  <div className="w-full h-48 mb-4 flex items-center justify-center bg-gray-800/20 dark:bg-gray-700 rounded-lg">
+                    <span className="text-gray-500">{t("")}</span>
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                    {announcement.title[currentLang] || announcement.title.en}
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 line-clamp-3 mb-4">
-                    {announcement.content[currentLang] || announcement.content.en}
-                  </p>
-                  <Link
-                    to={`/announcements/${announcement.id}`}
-                    className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium flex items-center"
+                )}
+
+                <div className="flex items-center space-x-2 mb-2">
+                  <span
+                    className={`badge ${announcement.priority === "high"
+                        ? "badge-danger"
+                        : announcement.priority === "medium"
+                          ? "badge-warning"
+                          : "badge-success"
+                      }`}
                   >
-                    {t("readMore")}
-                    <ArrowRight className="w-4 h-4 ml-1" />
-                  </Link>
+                    {announcement.priority}
+                  </span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    {new Date(announcement.published_at).toLocaleDateString()}
+                  </span>
                 </div>
-              );
-            })}
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  {announcement.title[currentLang] || announcement.title.en}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 line-clamp-3 mb-4">
+                  {announcement.content[currentLang] || announcement.content.en}
+                </p>
+                <Link
+                  to={`/announcements/${announcement.id}`}
+                  className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium flex items-center"
+                >
+                  {t("readMore")}
+                  <ArrowRight className="w-4 h-4 ml-1" />
+                </Link>
+              </div>
+            );
+          })}
         </div>
       </section>
 
