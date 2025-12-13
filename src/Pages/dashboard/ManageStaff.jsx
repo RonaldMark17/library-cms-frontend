@@ -14,7 +14,7 @@ export default function ManageUsers() {
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
-    role: "",
+    role: "staff",
     email: "",
     phone: "",
     bio: "",
@@ -38,7 +38,6 @@ export default function ManageUsers() {
     try {
       const res = await fetch(`${API_URL}/users`, {
         headers: { Authorization: `Bearer ${token}` },
-
       });
       if (!res.ok) throw new Error("Failed to fetch users");
       const data = await res.json();
@@ -51,6 +50,38 @@ export default function ManageUsers() {
     }
   }
 
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      role: "staff",
+      email: "",
+      phone: "",
+      bio: "",
+      image: null,
+      password: "",
+      password_confirmation: "",
+    });
+    setImagePreview(null);
+    setEditingId(null);
+    setErrors({});
+  };
+
+  const startEditing = (user) => {
+    setEditingId(user.id);
+    setFormData({
+      name: user.name,
+      role: user.role || "staff",
+      email: user.email || "",
+      phone: user.phone || "",
+      bio: user.bio?.[currentLocale] || "",
+      image: null,
+      password: "",
+      password_confirmation: "",
+    });
+    setImagePreview(user.image_path ? `http://127.0.0.1:8000/storage/${user.image_path}` : null);
+    setShowModal(true);
+  };
+
   async function handleSubmit(e) {
     e.preventDefault();
     setSubmitting(true);
@@ -58,7 +89,7 @@ export default function ManageUsers() {
 
     const payload = new FormData();
     payload.append("name", formData.name);
-    payload.append("role", formData.role);
+    payload.append("role", formData.role || "staff");
     if (formData.email) payload.append("email", formData.email);
     if (!editingId) {
       payload.append("password", formData.password);
@@ -67,21 +98,19 @@ export default function ManageUsers() {
       if (formData.phone) payload.append("phone", formData.phone);
       if (formData.bio) payload.append("bio", formData.bio);
       if (formData.image) payload.append("image", formData.image);
-    }
-
-    let url = `${API_URL}/users`;
-    if (editingId) {
-      url = `${API_URL}/users/${editingId}`;
       payload.append("_method", "PUT");
     }
+
+    let url = editingId ? `${API_URL}/users/${editingId}` : `${API_URL}/users`;
 
     try {
       const res = await fetch(url, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
-
         body: payload,
       });
+
+      const data = await res.json();
 
       if (res.ok) {
         setMessage(editingId ? t("User Updated") : t("User Created"));
@@ -89,9 +118,8 @@ export default function ManageUsers() {
         resetForm();
         fetchUsers();
       } else {
-        const errData = await res.json();
-        setErrors(errData.errors || {});
-        setMessage(t("Error Saving User"));
+        setErrors(data.errors || {});
+        setMessage(data.message || t("Error Saving User"));
       }
     } catch (error) {
       console.error(error);
@@ -123,39 +151,6 @@ export default function ManageUsers() {
       setMessage(t("Error Updating User"));
     }
   }
-
-
-  const resetForm = () => {
-    setFormData({
-      name: "",
-      role: "",
-      email: "",
-      phone: "",
-      bio: "",
-      image: null,
-      password: "",
-      password_confirmation: "",
-    });
-    setImagePreview(null);
-    setEditingId(null);
-    setErrors({});
-  };
-
-  const startEditing = (user) => {
-    setEditingId(user.id);
-    setFormData({
-      name: user.name,
-      role: user.role,
-      email: user.email || "",
-      phone: user.phone || "",
-      bio: user.bio?.[currentLocale] || "",
-      image: null,
-      password: "",
-      password_confirmation: "",
-    });
-    setImagePreview(user.image_path ? `http://127.0.0.1:8000/storage/${user.image_path}` : null);
-    setShowModal(true);
-  };
 
   if (loading) {
     return (
@@ -212,7 +207,6 @@ export default function ManageUsers() {
             <p className="text-primary-600 dark:text-primary-400 mb-2">
               {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
             </p>
-
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{user.email}</p>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{user.bio?.[currentLocale] || ""}</p>
             {user.disabled && <span className="text-red-600 font-semibold text-sm mb-2 block">Disabled</span>}
@@ -239,55 +233,63 @@ export default function ManageUsers() {
 
       {/* Modal */}
       {showModal && (
-        <>
-          {!editingId ? (
-            // Add User Modal
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Add User</h2>
-                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-                    <X className="w-6 h-6" />
-                  </button>
-                </div>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className={`bg-white dark:bg-gray-800 rounded-lg p-6 w-full ${editingId ? "max-w-2xl max-h-[90vh] overflow-y-auto" : "max-w-md"}`}>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                {editingId ? "Edit User" : "Add User"}
+              </h2>
+              <button
+                onClick={() => setShowModal(false)}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Name *</label>
-                    <input
-                      type="text"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="input-field"
-                      required
-                    />
-                  </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Name *</label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="input-field"
+                  required
+                />
+              </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email *</label>
-                    <input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="input-field"
-                      required
-                    />
-                  </div>
+              {/* Email */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email *</label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="input-field"
+                  required
+                />
+              </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Role *</label>
-                    <select
-                      value={formData.role}
-                      onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                      className="input-field"
-                      required
-                    >
-                      <option value="staff">Staff</option>
-                      <option value="librarian">Librarian</option>
-                      <option value="admin">Admin</option>
-                    </select>
-                  </div>
+              {/* Role */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Role *</label>
+                <select
+                  value={formData.role}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  className="input-field"
+                  required
+                >
+                  <option value="staff">Staff</option>
+                  <option value="librarian">Librarian</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
 
+              {/* Password (Add User only) */}
+              {!editingId && (
+                <>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password *</label>
                     <input
@@ -298,7 +300,6 @@ export default function ManageUsers() {
                       required
                     />
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm Password *</label>
                     <input
@@ -309,62 +310,13 @@ export default function ManageUsers() {
                       required
                     />
                   </div>
+                </>
+              )}
 
-                  <div className="flex space-x-3 pt-4">
-                    <button type="submit" className="primary-btn flex-1">{submitting ? "Creating..." : "Create"}</button>
-                    <button type="button" onClick={() => setShowModal(false)} className="secondary-btn">Cancel</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          ) : (
-            // Edit User Modal
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Edit User</h2>
-                  <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-                    <X className="w-6 h-6" />
-                  </button>
-                </div>
-
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Name *</label>
-                    <input
-                      type="text"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="input-field"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email *</label>
-                    <input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="input-field"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Role *</label>
-                    <select
-                      value={formData.role}
-                      onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                      className="input-field"
-                      required
-                    >
-                      <option value="staff">Staff</option>
-                      <option value="librarian">Librarian</option>
-                      <option value="admin">Admin</option>
-                    </select>
-                  </div>
-
+              {/* Edit User fields */}
+              {editingId && (
+                <>
+                  {/* Phone */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone</label>
                     <input
@@ -375,6 +327,7 @@ export default function ManageUsers() {
                     />
                   </div>
 
+                  {/* Bio */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Bio</label>
                     <textarea
@@ -385,6 +338,7 @@ export default function ManageUsers() {
                     />
                   </div>
 
+                  {/* Image */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center space-x-2">
                       <Upload className="w-4 h-4" />
@@ -403,16 +357,21 @@ export default function ManageUsers() {
                       <img src={imagePreview} alt="preview" className="mt-2 w-32 h-32 object-cover rounded-lg" />
                     )}
                   </div>
+                </>
+              )}
 
-                  <div className="flex space-x-3 pt-4">
-                    <button type="submit" className="primary-btn flex-1">{submitting ? "Updating..." : "Update"}</button>
-                    <button type="button" onClick={() => setShowModal(false)} className="secondary-btn">Cancel</button>
-                  </div>
-                </form>
+              {/* Buttons */}
+              <div className="flex space-x-3 pt-4">
+                <button type="submit" className="primary-btn flex-1">
+                  {submitting ? (editingId ? "Updating..." : "Creating...") : (editingId ? "Update" : "Create")}
+                </button>
+                <button type="button" onClick={() => setShowModal(false)} className="secondary-btn">
+                  Cancel
+                </button>
               </div>
-            </div>
-          )}
-        </>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

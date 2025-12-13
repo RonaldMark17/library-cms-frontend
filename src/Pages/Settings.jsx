@@ -4,11 +4,12 @@ import { useTranslation } from "react-i18next";
 import { Shield, ShieldCheck } from "lucide-react";
 
 export default function Settings() {
-  const { user, token } = useContext(AppContext);
+  const { user, token, setUser } = useContext(AppContext);
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
+  // Toggle 2FA
   async function toggle2FA(enable) {
     setLoading(true);
     setMessage("");
@@ -18,19 +19,23 @@ export default function Settings() {
       const res = await fetch(endpoint, {
         method: "POST",
         headers: {
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
 
       const data = await res.json();
-      
+
       if (res.ok) {
         setMessage(data.message);
-        window.location.reload();
+        setUser(prev => ({ ...prev, two_factor_enabled: enable }));
+      } else if (data.message) {
+        setMessage(data.message);
       } else {
         setMessage("An error occurred");
       }
     } catch (error) {
+      console.error(error);
       setMessage("An error occurred");
     } finally {
       setLoading(false);
@@ -40,18 +45,21 @@ export default function Settings() {
   if (!user) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-600 dark:text-gray-400">Please login to access settings</p>
+        <p className="text-gray-600 dark:text-gray-400">
+          Please login to access settings
+        </p>
       </div>
     );
   }
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="title">{t('settings')}</h1>
+      <h1 className="title">{t("settings")}</h1>
 
+      {/* Account Security */}
       <div className="card">
         <h2 className="subtitle">Account Security</h2>
-        
+
         <div className="flex items-center justify-between py-4">
           <div className="flex items-center space-x-3">
             {user.two_factor_enabled ? (
@@ -74,8 +82,9 @@ export default function Settings() {
             disabled={loading}
             className={user.two_factor_enabled ? "danger-btn" : "primary-btn"}
           >
-            {loading ? t('loading') : user.two_factor_enabled ? "Disable" : "Enable"}
+            {loading ? t("loading") : user.two_factor_enabled ? "Disable" : "Enable"}
           </button>
+
         </div>
 
         {message && (
@@ -85,9 +94,10 @@ export default function Settings() {
         )}
       </div>
 
+      {/* Profile Information */}
       <div className="card">
         <h2 className="subtitle">Profile Information</h2>
-        
+
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -95,14 +105,14 @@ export default function Settings() {
             </label>
             <p className="text-gray-900 dark:text-white">{user.name}</p>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Email
             </label>
             <p className="text-gray-900 dark:text-white">{user.email}</p>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Role
