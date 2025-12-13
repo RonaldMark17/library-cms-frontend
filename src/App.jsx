@@ -12,7 +12,7 @@ import Home from "./Pages/Home";
 import About from "./Pages/About";
 import Staff from "./Pages/Staff";
 import Announcements from "./Pages/Announcements";
-import AnnouncementDetail from "./Pages/AnnouncementDetail";
+import AnnouncementDetail from "../AnnouncementDetail";
 import Resources from "./Pages/Resources";
 import Subscribe from "./Pages/Subscribe";
 import Search from "./Pages/Search";
