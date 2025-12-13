@@ -177,10 +177,9 @@ export default function ManageAnnouncements() {
             <div className="flex-1">
               <div className="flex justify-between mb-2">
                 <span
-                  className={`badge ${
-                    a.priority === "high" ? "badge-danger" :
-                    a.priority === "medium" ? "badge-warning" : "badge-success"
-                  }`}
+                  className={`badge ${a.priority === "high" ? "badge-danger" :
+                      a.priority === "medium" ? "badge-warning" : "badge-success"
+                    }`}
                 >
                   {a.priority}
                 </span>
@@ -233,7 +232,7 @@ export default function ManageAnnouncements() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label>{t("Title")} *</label>
+                <label className="dark:text-white">{t("Title")} *</label>
                 <input
                   type="text"
                   value={formData.title}
@@ -244,7 +243,7 @@ export default function ManageAnnouncements() {
               </div>
 
               <div>
-                <label>{t("Content")} *</label>
+                <label className="dark:text-white">{t("Content")} *</label>
                 <textarea
                   value={formData.content}
                   onChange={(e) => setFormData({ ...formData, content: e.target.value })}
@@ -256,7 +255,7 @@ export default function ManageAnnouncements() {
 
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label>{t("Priority")}</label>
+                  <label className="dark:text-white">{t("Priority")}</label>
                   <select
                     value={formData.priority}
                     onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
@@ -267,8 +266,9 @@ export default function ManageAnnouncements() {
                     <option value="high">{t("High")}</option>
                   </select>
                 </div>
+
                 <div>
-                  <label>{t("Published Date")}</label>
+                  <label className="dark:text-white">{t("Published Date")}</label>
                   <input
                     type="date"
                     value={formData.published_at}
@@ -276,8 +276,9 @@ export default function ManageAnnouncements() {
                     className="input-field"
                   />
                 </div>
+
                 <div>
-                  <label>{t("Expires Date")}</label>
+                  <label className="dark:text-white">{t("Expires Date")}</label>
                   <input
                     type="date"
                     value={formData.expires_at}
@@ -288,7 +289,7 @@ export default function ManageAnnouncements() {
               </div>
 
               <div>
-                <label className="flex items-center space-x-2">
+                <label className="flex items-center space-x-2 dark:text-white">
                   <Upload className="w-4 h-4" />
                   <span>{t("Image")}</span>
                 </label>
@@ -315,6 +316,7 @@ export default function ManageAnnouncements() {
                     editingId ? t("update") : t("create")
                   )}
                 </button>
+
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
@@ -327,6 +329,7 @@ export default function ManageAnnouncements() {
           </div>
         </div>
       )}
+
     </div>
   );
 }

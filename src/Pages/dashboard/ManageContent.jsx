@@ -119,7 +119,7 @@ export default function ManageContent() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">
-                    {t("contentEnglishOnly")}
+                    {t("Content")}
                   </label>
                   <textarea
                     value={formData.content.en}

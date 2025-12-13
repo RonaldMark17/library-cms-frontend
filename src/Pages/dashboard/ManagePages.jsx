@@ -169,28 +169,28 @@ export default function ManagePages() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t("slug")} *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t("Slug")} *</label>
                 <input type="text" value={formData.slug} onChange={(e) => setFormData({ ...formData, slug: e.target.value })} className="input-field" placeholder="about-us" required />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t("urlWillBe")}: /pages/{formData.slug}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t("URL Will Be")}: /pages/{formData.slug}</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t("titleEn")} *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t("Title")} *</label>
                 <input type="text" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className="input-field" required />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t("contentEn")} *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t("Content")} *</label>
                 <textarea value={formData.content} onChange={(e) => setFormData({ ...formData, content: e.target.value })} rows="10" className="input-field" required />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t("metaDescription")}</label>
-                <textarea value={formData.meta_description} onChange={(e) => setFormData({ ...formData, meta_description: e.target.value })} rows="2" className="input-field" placeholder={t("seoDescription")} />
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t("Meta Description")}</label>
+                <textarea value={formData.meta_description} onChange={(e) => setFormData({ ...formData, meta_description: e.target.value })} rows="2" className="input-field" placeholder={t("SEO Description")} />
               </div>
 
               <div className="flex space-x-3 pt-4">
-                <button type="button" onClick={() => setShowModal(false)} className="secondary-btn">{t("cancel")}</button>
+                <button type="button" onClick={() => setShowModal(false)} className="secondary-btn">{t("Cancel")}</button>
                 <button type="submit" className="primary-btn flex-1" disabled={submitting}>
                   {submitting ? (
                     <div className="flex items-center space-x-2 justify-center">

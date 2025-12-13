@@ -79,7 +79,7 @@ export default function ManageLinks() {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <Link to="/dashboard" className="text-primary-600 dark:text-primary-400"><ArrowLeft className="w-6 h-6" /></Link>
-          <h1 className="title mb-0">{t("manageExternalLinks")}</h1>
+          <h1 className="title mb-0">{t("Manage External Links")}</h1>
         </div>
         <button onClick={() => { resetForm(); setShowModal(true); }} className="primary-btn flex items-center space-x-2"><Plus className="w-5 h-5" /><span>{t("Add Link")}</span></button>
       </div>
@@ -116,27 +116,27 @@ export default function ManageLinks() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t("titleEnglish")}</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t("Title")}</label>
                 <input type="text" value={formData.title.en} onChange={(e) => setFormData({ ...formData, title: { en: e.target.value } })} className="input-field" required />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t("url")}</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t("URL")}</label>
                 <input type="url" value={formData.url} onChange={(e) => setFormData({ ...formData, url: e.target.value })} className="input-field" placeholder="https://example.com" required />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t("descriptionEnglish")}</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t("Description")}</label>
                 <textarea value={formData.description.en} onChange={(e) => setFormData({ ...formData, description: { en: e.target.value } })} rows="3" className="input-field" />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t("icon")}</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t("Icon")}</label>
                 <input type="text" value={formData.icon} onChange={(e) => setFormData({ ...formData, icon: e.target.value })} className="input-field" placeholder="🔗" maxLength="2" />
               </div>
 
               <div className="flex space-x-3 pt-4">
-                <button type="button" onClick={() => setShowModal(false)} className="secondary-btn">{t("cancel")}</button>
+                <button type="button" onClick={() => setShowModal(false)} className="secondary-btn">{t("Cancel")}</button>
                 <button type="submit" className="primary-btn flex-1" disabled={submitting}>
                   {submitting ? (
                     <div className="flex items-center justify-center space-x-2">
