@@ -120,6 +120,7 @@ export default function Home() {
       </section>
 
       {/* Latest Announcements */}
+      {/* Latest Announcements */}
       <section>
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white">{t("latestNews")}</h2>
@@ -133,52 +134,54 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {announcements.map((announcement) => {
-            const imageSrc =
-              announcement.image_url ||
-              (announcement.image_path ? `${API_URL}/storage/${announcement.image_path}` : '/placeholder.jpg');
+          {announcements
+            .filter(a => !a.expires_at || new Date(a.expires_at) >= new Date()) // Filter out expired
+            .map((announcement) => {
+              const imageSrc =
+                announcement.image_url ||
+                (announcement.image_path ? `${API_URL}/storage/${announcement.image_path}` : '/placeholder.jpg');
 
-            return (
-              <div key={announcement.id} className="card hover:shadow-lg transition-shadow">
-                <img
-                  src={imageSrc}
-                  alt={announcement.title[currentLang] || announcement.title.en}
-                  className="w-full h-48 object-cover rounded-lg mb-4"
-                />
-                <div className="flex items-center space-x-2 mb-2">
-                  <span
-                    className={`badge ${
-                      announcement.priority === "high"
-                        ? "badge-danger"
-                        : announcement.priority === "medium"
-                        ? "badge-warning"
-                        : "badge-success"
-                    }`}
+              return (
+                <div key={announcement.id} className="card hover:shadow-lg transition-shadow">
+                  <img
+                    src={imageSrc}
+                    alt={announcement.title[currentLang] || announcement.title.en}
+                    className="w-full h-48 object-cover rounded-lg mb-4"
+                  />
+                  <div className="flex items-center space-x-2 mb-2">
+                    <span
+                      className={`badge ${announcement.priority === "high"
+                          ? "badge-danger"
+                          : announcement.priority === "medium"
+                            ? "badge-warning"
+                            : "badge-success"
+                        }`}
+                    >
+                      {announcement.priority.charAt(0).toUpperCase() + announcement.priority.slice(1)}
+                    </span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      {new Date(announcement.published_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                    {announcement.title[currentLang] || announcement.title.en}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 line-clamp-3 mb-4">
+                    {announcement.content[currentLang] || announcement.content.en}
+                  </p>
+                  <Link
+                    to={`/announcements/${announcement.id}`}
+                    className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium flex items-center"
                   >
-                    {announcement.priority}
-                  </span>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    {new Date(announcement.published_at).toLocaleDateString()}
-                  </span>
+                    {t("readMore")}
+                    <ArrowRight className="w-4 h-4 ml-1" />
+                  </Link>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                  {announcement.title[currentLang] || announcement.title.en}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 line-clamp-3 mb-4">
-                  {announcement.content[currentLang] || announcement.content.en}
-                </p>
-                <Link
-                  to={`/announcements/${announcement.id}`}
-                  className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium flex items-center"
-                >
-                  {t("readMore")}
-                  <ArrowRight className="w-4 h-4 ml-1" />
-                </Link>
-              </div>
-            );
-          })}
+              );
+            })}
         </div>
       </section>
+
 
       {/* Subscribe Section */}
       <section className="bg-gradient-to-r from-primary-50 to-primary-100 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-8 text-center">
