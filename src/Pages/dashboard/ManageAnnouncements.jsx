@@ -1,15 +1,28 @@
 import { useState, useEffect, useContext } from "react";
 import { AppContext } from "../../Context/AppContext";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Plus, Edit, Trash2, X, Upload, Calendar } from "lucide-react";
+import {
+  ArrowLeft,
+  Plus,
+  Edit,
+  Trash2,
+  X,
+  Upload,
+  Calendar,
+  Eye,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function ManageAnnouncements() {
   const { token } = useContext(AppContext);
   const { t } = useTranslation();
+
   const [announcements, setAnnouncements] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
+
   const [formData, setFormData] = useState({
     title: "",
     content: "",
@@ -18,6 +31,7 @@ export default function ManageAnnouncements() {
     expires_at: "",
     image: null,
   });
+
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
@@ -51,54 +65,45 @@ export default function ManageAnnouncements() {
       expires_at: "",
       image: null,
     });
+    setImagePreview(null);
     setEditingId(null);
   };
 
-  const startEditing = (announcement) => {
-    setEditingId(announcement.id);
+  const startEditing = (a) => {
+    setEditingId(a.id);
     setFormData({
-      title: announcement.title.en,
-      content: announcement.content.en,
-      priority: announcement.priority,
-      published_at: announcement.published_at?.split("T")[0] || "",
-      expires_at: announcement.expires_at?.split("T")[0] || "",
+      title: a.title.en,
+      content: a.content.en,
+      priority: a.priority,
+      published_at: a.published_at?.split("T")[0] || "",
+      expires_at: a.expires_at?.split("T")[0] || "",
       image: null,
     });
+    setImagePreview(a.image_url || null);
     setShowModal(true);
   };
 
   const handleDelete = async (id) => {
     if (!confirm(t("Delete Confirm"))) return;
     try {
-      const res = await fetch(`${API_URL}/announcements/${id}`, {
+      await fetch(`${API_URL}/announcements/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (res.ok) {
-        setMessage(t("Announcement Deleted"));
-        fetchAnnouncements();
-      } else {
-        const errorData = await res.json();
-        setMessage(errorData.message || t("errorDeletingAnnouncement"));
-      }
-    } catch (error) {
-      console.error(error);
-      setMessage(t("errorDeletingAnnouncement"));
+      fetchAnnouncements();
+    } catch (err) {
+      console.error(err);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    setMessage("");
 
     const formToSend = new FormData();
-    formToSend.append("title", formData.title);
-    formToSend.append("content", formData.content);
-    formToSend.append("priority", formData.priority);
-    if (formData.published_at) formToSend.append("published_at", formData.published_at);
-    if (formData.expires_at) formToSend.append("expires_at", formData.expires_at);
-    if (formData.image) formToSend.append("image", formData.image);
+    Object.entries(formData).forEach(([key, val]) => {
+      if (val) formToSend.append(key, val);
+    });
     if (editingId) formToSend.append("_method", "PUT");
 
     try {
@@ -106,24 +111,17 @@ export default function ManageAnnouncements() {
         ? `${API_URL}/announcements/${editingId}`
         : `${API_URL}/announcements`;
 
-      const res = await fetch(url, {
+      await fetch(url, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formToSend,
       });
 
-      if (res.ok) {
-        setMessage(editingId ? t("Announcement Updated") : t("Announcement Created"));
-        setShowModal(false);
-        resetForm();
-        fetchAnnouncements();
-      } else {
-        const errorData = await res.json();
-        setMessage(errorData.message || t("Error Saving Announcement"));
-      }
-    } catch (error) {
-      console.error(error);
-      setMessage(t("Error Saving Announcement"));
+      setShowModal(false);
+      resetForm();
+      fetchAnnouncements();
+    } catch (err) {
+      console.error(err);
     } finally {
       setSubmitting(false);
     }
@@ -139,15 +137,19 @@ export default function ManageAnnouncements() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex justify-between items-center">
         <div className="flex items-center space-x-4">
-          <Link to="/dashboard" className="text-primary-600 dark:text-primary-400">
-            <ArrowLeft className="w-6 h-6" />
+          <Link to="/dashboard">
+            <ArrowLeft className="w-6 h-6 text-primary-600 dark:text-primary-400" />
           </Link>
           <h1 className="title mb-0">{t("Manage Announcements")}</h1>
         </div>
         <button
-          onClick={() => { resetForm(); setShowModal(true); }}
+          onClick={() => {
+            resetForm();
+            setShowModal(true);
+          }}
           className="primary-btn flex items-center space-x-2"
         >
           <Plus className="w-5 h-5" />
@@ -155,17 +157,10 @@ export default function ManageAnnouncements() {
         </button>
       </div>
 
-      {message && (
-        <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg p-4 text-primary-600 dark:text-primary-400">
-          {message}
-        </div>
-      )}
-
+      {/* List */}
       <div className="space-y-4">
-        {announcements.map(a => (
+        {announcements.map((a) => (
           <div key={a.id} className="card flex gap-6">
-
-            {/* ✅ Only show image if it exists */}
             {a.image_url && (
               <img
                 src={a.image_url}
@@ -173,156 +168,149 @@ export default function ManageAnnouncements() {
                 className="w-48 h-32 object-cover rounded-lg"
               />
             )}
-
             <div className="flex-1">
               <div className="flex justify-between mb-2">
                 <span
-                  className={`badge ${a.priority === "high" ? "badge-danger" :
-                      a.priority === "medium" ? "badge-warning" : "badge-success"
-                    }`}
+                  className={`badge ${
+                    a.priority === "high"
+                      ? "badge-danger"
+                      : a.priority === "medium"
+                      ? "badge-warning"
+                      : "badge-success"
+                  }`}
                 >
                   {a.priority}
                 </span>
                 <div className="flex space-x-2">
                   <button
                     onClick={() => startEditing(a)}
-                    className="secondary-btn flex items-center space-x-1"
+                    className="secondary-btn"
                   >
                     <Edit className="w-4 h-4" />
-                    <span>{t("edit")}</span>
                   </button>
                   <button
                     onClick={() => handleDelete(a.id)}
-                    className="danger-btn flex items-center space-x-1"
+                    className="danger-btn"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{a.title.en}</h3>
-              <p className="text-gray-600 dark:text-gray-400 line-clamp-2 mb-2">{a.content.en}</p>
-              <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
-                <span className="flex items-center">
-                  <Calendar className="w-4 h-4 mr-1" />
-                  {new Date(a.published_at).toLocaleDateString()}
-                </span>
-                {a.expires_at && (
-                  <span>Expires: {new Date(a.expires_at).toLocaleDateString()}</span>
-                )}
+
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                {a.title.en}
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 line-clamp-2">
+                {a.content.en}
+              </p>
+
+              <div className="mt-2 text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                <Calendar className="w-4 h-4 mr-1" />
+                {new Date(a.published_at).toLocaleDateString()}
               </div>
             </div>
           </div>
         ))}
       </div>
 
+      {/* Add/Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between mb-4">
+              <h2 className="text-2xl font-bold dark:text-white">
                 {editingId ? t("Edit Announcement") : t("Add Announcement")}
               </h2>
-              <button
-                onClick={() => setShowModal(false)}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              >
-                <X className="w-6 h-6" />
+              <button onClick={() => setShowModal(false)}>
+                <X />
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="dark:text-white">{t("Title")} *</label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="input-field"
-                  required
-                />
-              </div>
+              <input
+                className="input-field"
+                placeholder={t("Title")}
+                value={formData.title}
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
+                required
+              />
 
-              <div>
-                <label className="dark:text-white">{t("Content")} *</label>
-                <textarea
-                  value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  rows="6"
-                  className="input-field"
-                  required
-                />
-              </div>
+              <textarea
+                className="input-field"
+                rows="5"
+                placeholder={t("Content")}
+                value={formData.content}
+                onChange={(e) =>
+                  setFormData({ ...formData, content: e.target.value })
+                }
+                required
+              />
 
               <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="dark:text-white">{t("Priority")}</label>
-                  <select
-                    value={formData.priority}
-                    onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                    className="input-field"
-                  >
-                    <option value="low">{t("Low")}</option>
-                    <option value="medium">{t("Medium")}</option>
-                    <option value="high">{t("High")}</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="dark:text-white">{t("Published Date")}</label>
-                  <input
-                    type="date"
-                    value={formData.published_at}
-                    onChange={(e) => setFormData({ ...formData, published_at: e.target.value })}
-                    className="input-field"
-                  />
-                </div>
-
-                <div>
-                  <label className="dark:text-white">{t("Expires Date")}</label>
-                  <input
-                    type="date"
-                    value={formData.expires_at}
-                    onChange={(e) => setFormData({ ...formData, expires_at: e.target.value })}
-                    className="input-field"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="flex items-center space-x-2 dark:text-white">
-                  <Upload className="w-4 h-4" />
-                  <span>{t("Image")}</span>
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setFormData({ ...formData, image: e.target.files[0] })}
+                <select
                   className="input-field"
+                  value={formData.priority}
+                  onChange={(e) =>
+                    setFormData({ ...formData, priority: e.target.value })
+                  }
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
+
+                <input
+                  type="date"
+                  className="input-field"
+                  value={formData.published_at}
+                  onChange={(e) =>
+                    setFormData({ ...formData, published_at: e.target.value })
+                  }
+                />
+
+                <input
+                  type="date"
+                  className="input-field"
+                  value={formData.expires_at}
+                  onChange={(e) =>
+                    setFormData({ ...formData, expires_at: e.target.value })
+                  }
                 />
               </div>
 
+              <input
+                type="file"
+                accept="image/*"
+                className="input-field"
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  setFormData({ ...formData, image: file });
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onloadend = () => setImagePreview(reader.result);
+                    reader.readAsDataURL(file);
+                  }
+                }}
+              />
+
+              {/* Buttons */}
               <div className="flex space-x-3 pt-4">
                 <button
                   type="submit"
                   className="primary-btn flex-1"
                   disabled={submitting}
                 >
-                  {submitting ? (
-                    <div className="flex items-center justify-center space-x-2">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      <span>{editingId ? t("Updating") : t("Creating")}...</span>
-                    </div>
-                  ) : (
-                    editingId ? t("update") : t("create")
-                  )}
+                  {editingId ? t("Update") : t("Publish")}
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => setShowModal(false)}
-                  className="secondary-btn"
+                  className="secondary-btn flex-1"
+                  onClick={() => setShowPreview(true)}
                 >
-                  {t("cancel")}
+                  {t("Preview")}
                 </button>
               </div>
             </form>
@@ -330,6 +318,59 @@ export default function ManageAnnouncements() {
         </div>
       )}
 
+      {/* Preview Modal */}
+      {showPreview && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold dark:text-white">{t("Preview")}</h2>
+              <button onClick={() => setShowPreview(false)}>
+                <X />
+              </button>
+            </div>
+
+            {/* Preview Content */}
+            {imagePreview && (
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="w-full h-48 object-cover rounded-lg mb-4 border border-gray-200 dark:border-gray-700"
+              />
+            )}
+
+            <span
+              className={`badge ${
+                formData.priority === "high"
+                  ? "badge-danger"
+                  : formData.priority === "medium"
+                  ? "badge-warning"
+                  : "badge-success"
+              }`}
+            >
+              {formData.priority}
+            </span>
+
+            <h3 className="text-xl font-bold mt-3 dark:text-white">
+              {formData.title || t("Announcement title")}
+            </h3>
+
+            <p className="mt-2 text-gray-600 dark:text-gray-400">
+              {formData.content || t("Announcement content preview...")}
+            </p>
+
+            {(formData.published_at || formData.expires_at) && (
+              <div className="mt-3 text-sm text-gray-500 dark:text-gray-400 space-y-1">
+                {formData.published_at && (
+                  <div>{t("Published")}: {formData.published_at}</div>
+                )}
+                {formData.expires_at && (
+                  <div>{t("Expires")}: {formData.expires_at}</div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
