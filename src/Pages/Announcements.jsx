@@ -18,7 +18,20 @@ export default function Announcements() {
     try {
       const res = await fetch(`${API_URL}/announcements?page=${currentPage}`);
       const data = await res.json();
-      setAnnouncements(data.data || data);
+      let items = data.data || data;
+
+      // Filter: ipakita lang yung published na hindi sa future at hindi expired
+      const today = new Date();
+      items = items.filter(a => {
+        const published = new Date(a.published_at);
+        const expires = a.expires_at ? new Date(a.expires_at) : null;
+        return published <= today && (!expires || expires >= today);
+      });
+
+      // Optional: sort newest first
+      items.sort((a, b) => new Date(b.published_at) - new Date(a.published_at));
+
+      setAnnouncements(items);
       setTotalPages(data.last_page || 1);
     } catch (error) {
       console.error(error);
@@ -53,20 +66,19 @@ export default function Announcements() {
                 alt={a.title[lang] || a.title.en}
               />
             ) : (
-              // Empty placeholder div that centers content
-              <div className="w-full h-48 mb-4 flex items-center justify-center bg-gray-800/20 dark:bg-gray-700 rounded-lg">
-                {/* Optional: You can put an icon or text here */}
-              </div>
+              <div className="w-full h-48 mb-4 flex items-center justify-center bg-gray-800/20 dark:bg-gray-700 rounded-lg"></div>
             )}
 
             {/* Content section */}
             <div className={`flex flex-col ${!a.image_url ? "justify-center flex-1" : "flex-1"}`}>
               <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-2">
                 <span className="flex items-center gap-1">
-                  <Tag className="w-4 h-4" />{a.priority}
+                  <Tag className="w-4 h-4" />
+                  {a.priority.charAt(0).toUpperCase() + a.priority.slice(1)}
                 </span>
                 <span className="flex items-center gap-1">
-                  <Calendar className="w-4 h-4" />{new Date(a.published_at).toLocaleDateString()}
+                  <Calendar className="w-4 h-4" />
+                  {new Date(a.published_at).toLocaleDateString()}
                 </span>
               </div>
 
@@ -87,7 +99,6 @@ export default function Announcements() {
             </div>
 
           </div>
-
         ))}
       </div>
     </div>
