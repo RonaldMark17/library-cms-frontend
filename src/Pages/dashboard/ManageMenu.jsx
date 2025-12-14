@@ -214,7 +214,7 @@ export default function ManageMenu() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl shadow-lg transition-colors">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{editingId ? t("editMenuItem") : t("addMenuItem")}</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{editingId ? t("editMenuItem") : t("Add Menu Item")}</h2>
               <button onClick={() => { setShowModal(false); resetForm(); }} className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white">
                 <X className="w-6 h-6" />
               </button>
@@ -222,7 +222,7 @@ export default function ManageMenu() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-gray-700 dark:text-gray-200">{t("Label (English)")}</label>
+                <label className="block text-gray-700 dark:text-gray-200">{t("Label")}</label>
                 <input
                   type="text"
                   value={formData.label.en}

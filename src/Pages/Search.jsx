@@ -5,73 +5,133 @@ import { Search as SearchIcon } from "lucide-react";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+/* Static pages included in search */
+const STATIC_PAGES = [
+  { id: "home", titleKey: "home", contentKey: "homeDescription", path: "/" },
+  { id: "about", titleKey: "aboutUs", contentKey: "aboutUsDescription", path: "/about" },
+  { id: "staff", titleKey: "staffDirectory", contentKey: "staffDirectoryDescription", path: "/staff" },
+  { id: "announcements", titleKey: "announcements", contentKey: "announcementsDescription", path: "/announcements" },
+  { id: "resources", titleKey: "resources", contentKey: "resourcesDescription", path: "/resources" },
+  { id: "contact", titleKey: "contact", contentKey: "contactDescription", path: "/pages/contact" }
+];
+
+/* 🔍 Keyword highlighter (adaptive dark/light text) */
+function highlight(text, keyword) {
+  if (!text || !keyword) return text;
+
+  const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(`(${escaped})`, "gi");
+  const parts = text.split(regex);
+
+  return parts.map((part, index) =>
+    part.toLowerCase() === keyword.toLowerCase() ? (
+      <mark
+        key={index}
+        className="
+          rounded px-1
+          bg-yellow-200 text-yellow-800
+          dark:bg-yellow-600 dark:text-yellow-100
+        "
+      >
+        {part}
+      </mark>
+    ) : (
+      <span
+        key={index}
+        className="text-gray-900 dark:text-gray-100"
+      >
+        {part}
+      </span>
+    )
+  );
+}
+
 export default function Search() {
   const { t, i18n } = useTranslation();
   const [searchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
+
   const [results, setResults] = useState({
     announcements: [],
     staff: [],
     pages: []
   });
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (query) {
       searchContent();
+    } else {
+      setLoading(false);
     }
-  }, [query]);
+  }, [query, i18n.language]);
 
   async function searchContent() {
     setLoading(true);
+
     try {
-      const [announcementsRes, staffRes, pagesRes] = await Promise.all([
+      const [annRes, staffRes, pagesRes] = await Promise.all([
         fetch(`${API_URL}/announcements`),
         fetch(`${API_URL}/staff-members`),
         fetch(`${API_URL}/pages`)
       ]);
 
       const [announcements, staff, pages] = await Promise.all([
-        announcementsRes.json(),
+        annRes.json(),
         staffRes.json(),
         pagesRes.json()
       ]);
 
-      const currentLang = i18n.language;
-      const searchLower = query.toLowerCase();
+      const lang = i18n.language;
+      const q = query.toLowerCase();
 
-      // Filter announcements
-      const filteredAnnouncements = (announcements.data || announcements).filter(item =>
-        (item.title[currentLang] || item.title.en).toLowerCase().includes(searchLower) ||
-        (item.content[currentLang] || item.content.en).toLowerCase().includes(searchLower)
+      const filteredAnnouncements = (announcements.data || announcements).filter(
+        item =>
+          (item.title[lang] || item.title.en).toLowerCase().includes(q) ||
+          (item.content[lang] || item.content.en).toLowerCase().includes(q)
       );
 
-      // Filter staff
-      const filteredStaff = staff.filter(item =>
-        (item.name[currentLang] || item.name.en).toLowerCase().includes(searchLower) ||
-        (item.role[currentLang] || item.role.en).toLowerCase().includes(searchLower)
+      const filteredStaff = staff.filter(
+        item =>
+          (item.name[lang] || item.name.en).toLowerCase().includes(q) ||
+          (item.role[lang] || item.role.en).toLowerCase().includes(q)
       );
 
-      // Filter pages
-      const filteredPages = pages.filter(item =>
-        (item.title[currentLang] || item.title.en).toLowerCase().includes(searchLower) ||
-        (item.content[currentLang] || item.content.en).toLowerCase().includes(searchLower)
+      const filteredPages = pages.filter(
+        item =>
+          (item.title[lang] || item.title.en).toLowerCase().includes(q) ||
+          (item.content[lang] || item.content.en).toLowerCase().includes(q)
       );
+
+      const staticPages = STATIC_PAGES.filter(
+        page =>
+          t(page.titleKey).toLowerCase().includes(q) ||
+          t(page.contentKey).toLowerCase().includes(q)
+      ).map(page => ({
+        id: page.id,
+        title: { [lang]: t(page.titleKey) },
+        content: { [lang]: t(page.contentKey) },
+        path: page.path
+      }));
 
       setResults({
         announcements: filteredAnnouncements,
         staff: filteredStaff,
-        pages: filteredPages
+        pages: [...staticPages, ...filteredPages]
       });
-    } catch (error) {
-      console.error("Error searching:", error);
+    } catch (err) {
+      console.error("Search error:", err);
     } finally {
       setLoading(false);
     }
   }
 
-  const currentLang = i18n.language;
-  const totalResults = results.announcements.length + results.staff.length + results.pages.length;
+  const lang = i18n.language;
+  const total =
+    results.announcements.length +
+    results.staff.length +
+    results.pages.length;
 
   if (loading) {
     return (
@@ -84,18 +144,18 @@ export default function Search() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="title flex items-center">
+        <h1 className="title flex items-center text-gray-900 dark:text-gray-100">
           <SearchIcon className="w-8 h-8 mr-3" />
-          {t('search')} Results
+          {t("search")} Results
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Found {totalResults} results for "{query}"
+          Found {total} results for "{query}"
         </p>
       </div>
 
-      {totalResults === 0 ? (
+      {total === 0 ? (
         <div className="card text-center py-12">
-          <SearchIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <SearchIcon className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
           <p className="text-gray-600 dark:text-gray-400">
             No results found. Try a different search term.
           </p>
@@ -105,7 +165,9 @@ export default function Search() {
           {/* Announcements */}
           {results.announcements.length > 0 && (
             <div>
-              <h2 className="subtitle">{t('announcements')} ({results.announcements.length})</h2>
+              <h2 className="subtitle text-gray-900 dark:text-gray-100">
+                {t("announcements")} ({results.announcements.length})
+              </h2>
               <div className="space-y-4">
                 {results.announcements.map(item => (
                   <Link
@@ -113,11 +175,11 @@ export default function Search() {
                     to={`/announcements/${item.id}`}
                     className="card hover:shadow-lg transition-shadow block"
                   >
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                      {item.title[currentLang] || item.title.en}
+                    <h3 className="text-xl font-bold mb-2">
+                      {highlight(item.title[lang] || item.title.en, query)}
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-400 line-clamp-2">
-                      {item.content[currentLang] || item.content.en}
+                    <p className="text-gray-700 dark:text-gray-300 line-clamp-2">
+                      {highlight(item.content[lang] || item.content.en, query)}
                     </p>
                   </Link>
                 ))}
@@ -128,15 +190,17 @@ export default function Search() {
           {/* Staff */}
           {results.staff.length > 0 && (
             <div>
-              <h2 className="subtitle">{t('staff')} ({results.staff.length})</h2>
+              <h2 className="subtitle text-gray-900 dark:text-gray-100">
+                {t("staff")} ({results.staff.length})
+              </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {results.staff.map(item => (
-                  <div key={item.id} className="card hover:shadow-lg transition-shadow">
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                      {item.name[currentLang] || item.name.en}
+                  <div key={item.id} className="card hover:shadow-lg">
+                    <h3 className="text-xl font-bold">
+                      {highlight(item.name[lang] || item.name.en, query)}
                     </h3>
                     <p className="text-primary-600 dark:text-primary-400">
-                      {item.role[currentLang] || item.role.en}
+                      {highlight(item.role[lang] || item.role.en, query)}
                     </p>
                   </div>
                 ))}
@@ -147,19 +211,21 @@ export default function Search() {
           {/* Pages */}
           {results.pages.length > 0 && (
             <div>
-              <h2 className="subtitle">Pages ({results.pages.length})</h2>
+              <h2 className="subtitle text-gray-900 dark:text-gray-100">
+                Pages ({results.pages.length})
+              </h2>
               <div className="space-y-4">
                 {results.pages.map(item => (
                   <Link
                     key={item.id}
-                    to={`/pages/${item.slug}`}
+                    to={item.path || `/pages/${item.slug}`}
                     className="card hover:shadow-lg transition-shadow block"
                   >
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                      {item.title[currentLang] || item.title.en}
+                    <h3 className="text-xl font-bold mb-2">
+                      {highlight(item.title[lang] || item.title.en, query)}
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-400 line-clamp-2">
-                      {item.content[currentLang] || item.content.en}
+                    <p className="text-gray-700 dark:text-gray-300 line-clamp-2">
+                      {highlight(item.content[lang] || item.content.en, query)}
                     </p>
                   </Link>
                 ))}
