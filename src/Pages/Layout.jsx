@@ -215,6 +215,10 @@ export default function Layout() {
       .filter((item) => item.parent_id === parentId && item.is_active)
       .map((item) => {
         const children = renderMenu(items, item.id, isFooter);
+
+        // dynamically choose label based on current language
+        const label = item.label[i18n.language] || item.label.en;
+
         const linkClass = isFooter
           ? "text-gray-700 dark:text-gray-200 hover:underline" // footer style
           : activeClass; // header style
@@ -223,7 +227,7 @@ export default function Layout() {
           return (
             <div key={item.id} className="relative group">
               <NavLink to={item.url || "#"} className={linkClass}>
-                {item.label.en}
+                {label}
               </NavLink>
               <div className="absolute hidden group-hover:block bg-white dark:bg-gray-800 shadow-lg rounded mt-1">
                 {children}
@@ -233,10 +237,11 @@ export default function Layout() {
         }
         return (
           <NavLink key={item.id} to={item.url || "#"} className={linkClass}>
-            {item.label.en}
+            {label}
           </NavLink>
         );
       });
+
 
   const handleSearch = (query) => {
     if (query) navigate(`/search?q=${encodeURIComponent(query)}`);
@@ -297,7 +302,7 @@ export default function Layout() {
                 {!user ? (
                   <>
                     <NavLink to="/login" className="primary-btn text-center" onClick={() => setMobileMenuOpen(false)}>{t("login")}</NavLink>
-                    <NavLink to="/register" className="secondary-btn text-center" onClick={() => setMobileMenuOpen(false)}>{t("register")}</NavLink>
+                    
                   </>
                 ) : (
                   <form onSubmit={handleLogout} className="pt-3">
