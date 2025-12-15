@@ -1,4 +1,4 @@
-import { useState } from "react";
+ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Mail, Bell, CheckCircle, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom"; // import if using react-router
