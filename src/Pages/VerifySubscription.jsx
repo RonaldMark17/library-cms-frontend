@@ -50,45 +50,47 @@ export default function VerifySubscription() {
   const iconProps = "w-16 h-16 mx-auto mb-4";
 
   return (
-    <div className="max-w-md mx-auto mt-12">
-      <div className="card text-center">
-        {status === "loading" && (
-          <>
-            <Loader className={`${iconProps} text-primary-600 dark:text-primary-400 animate-spin`} />
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-              {t("verifyingSubscription") || "Verifying Your Subscription"}
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400">
-              {t("pleaseWait") || "Please wait while we verify your email..."}
-            </p>
-          </>
-        )}
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 py-12">
+      <div className="max-w-md mx-auto mt-12">
+        <div className="card text-center">
+          {status === "loading" && (
+            <>
+              <Loader className={`${iconProps} text-primary-600 dark:text-primary-400 animate-spin`} />
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                {t("verifyingSubscription") || "Verifying Your Subscription"}
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400">
+                {t("pleaseWait") || "Please wait while we verify your email..."}
+              </p>
+            </>
+          )}
 
-        {status === "success" && (
-          <>
-            <CheckCircle className={`${iconProps} text-green-600 dark:text-green-400`} />
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-              {t("subscriptionVerified") || "Subscription Verified!"}
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">{message}</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {t("redirectingHome") || "Redirecting to home page..."}
-            </p>
-          </>
-        )}
+          {status === "success" && (
+            <>
+              <CheckCircle className={`${iconProps} text-green-600 dark:text-green-400`} />
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                {t("subscriptionVerified") || "Subscription Verified!"}
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">{message}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {t("redirectingHome") || "Redirecting to home page..."}
+              </p>
+            </>
+          )}
 
-        {status === "error" && (
-          <>
-            <XCircle className={`${iconProps} text-red-600 dark:text-red-400`} />
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-              {t("verificationFailedTitle") || "Verification Failed"}
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">{message}</p>
-            <button onClick={() => navigate("/")} className="primary-btn">
-              {t("goHome") || "Go to Home"}
-            </button>
-          </>
-        )}
+          {status === "error" && (
+            <>
+              <XCircle className={`${iconProps} text-red-600 dark:text-red-400`} />
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                {t("verificationFailedTitle") || "Verification Failed"}
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">{message}</p>
+              <button onClick={() => navigate("/")} className="primary-btn">
+                {t("goHome") || "Go to Home"}
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

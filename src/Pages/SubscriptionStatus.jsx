@@ -57,49 +57,51 @@ export default function VerifySubscription() {
   }
 
   return (
-    <div className="max-w-md mx-auto mt-12">
-      <div className="card text-center p-6 shadow-md rounded-lg">
-        {status === "loading" && (
-          <>
-            <Loader className="w-16 h-16 text-primary-600 dark:text-primary-400 mx-auto mb-4 animate-spin" />
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-              Verifying Your Subscription
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400">
-              Please wait while we verify your email...
-            </p>
-          </>
-        )}
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 py-12">
+      <div className="max-w-md mx-auto mt-12">
+        <div className="card text-center p-6 shadow-md rounded-lg">
+          {status === "loading" && (
+            <>
+              <Loader className="w-16 h-16 text-primary-600 dark:text-primary-400 mx-auto mb-4 animate-spin" />
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                Verifying Your Subscription
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400">
+                Please wait while we verify your email...
+              </p>
+            </>
+          )}
 
-        {status === "success" && (
-          <>
-            <CheckCircle className="w-16 h-16 text-green-600 dark:text-green-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-              Subscription Verified!
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">{message}</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              You will now receive email notifications about new announcements.
-              Redirecting to home page...
-            </p>
-          </>
-        )}
+          {status === "success" && (
+            <>
+              <CheckCircle className="w-16 h-16 text-green-600 dark:text-green-400 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                Subscription Verified!
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">{message}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                You will now receive email notifications about new announcements.
+                Redirecting to home page...
+              </p>
+            </>
+          )}
 
-        {status === "error" && (
-          <>
-            <XCircle className="w-16 h-16 text-red-600 dark:text-red-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-              Verification Failed
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">{message}</p>
-            <button
-              onClick={() => navigate("/")}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-            >
-              Go to Home
-            </button>
-          </>
-        )}
+          {status === "error" && (
+            <>
+              <XCircle className="w-16 h-16 text-red-600 dark:text-red-400 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                Verification Failed
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">{message}</p>
+              <button
+                onClick={() => navigate("/")}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+              >
+                Go to Home
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

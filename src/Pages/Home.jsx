@@ -77,7 +77,7 @@ export default function Home() {
     <div className="space-y-12">
       {/* Hero Section with Carousel */}
       <section
-        className="relative rounded-2xl overflow-hidden h-[500px] md:h-[600px]"
+        className="relative overflow-hidden h-[650px] md:h-[650px]"
         style={{
           backgroundImage: `url(${carouselImages[currentImage]})`,
           backgroundSize: "cover",
@@ -109,100 +109,102 @@ export default function Home() {
           </div>
         </div>
       </section>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 py-12">
 
-      {/* Vision, Mission, Goals */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {[
-          { key: "vision", title: t("ourVision"), icon: <BookOpen />, bg: "bg-primary-100 dark:bg-primary-900", color: "text-primary-600 dark:text-primary-400" },
-          { key: "mission", title: t("ourMission"), icon: <Users />, bg: "bg-green-100 dark:bg-green-900", color: "text-green-600 dark:text-green-400" },
-          { key: "goals", title: t("ourGoals"), icon: <Bell />, bg: "bg-yellow-100 dark:bg-yellow-900", color: "text-yellow-600 dark:text-yellow-400" },
-        ].map((item) => (
-          <div key={item.key} className="card hover:shadow-lg transition-shadow">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className={`p-3 rounded-lg ${item.bg}`}>{item.icon}</div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{item.title}</h2>
+        {/* Vision, Mission, Goals */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[
+            { key: "vision", title: t("ourVision"), icon: <BookOpen />, bg: "bg-primary-100 dark:bg-primary-900", color: "text-primary-600 dark:text-primary-400" },
+            { key: "mission", title: t("ourMission"), icon: <Users />, bg: "bg-green-100 dark:bg-green-900", color: "text-green-600 dark:text-green-400" },
+            { key: "goals", title: t("ourGoals"), icon: <Bell />, bg: "bg-yellow-100 dark:bg-yellow-900", color: "text-yellow-600 dark:text-yellow-400" },
+          ].map((item) => (
+            <div key={item.key} className="card hover:shadow-lg transition-shadow">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className={`p-3 rounded-lg ${item.bg}`}>{item.icon}</div>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{item.title}</h2>
+              </div>
+              <p className="text-gray-600 dark:text-gray-400">
+                {contentSections[item.key]?.[currentLang] || contentSections[item.key]?.en || "Loading..."}
+              </p>
             </div>
-            <p className="text-gray-600 dark:text-gray-400">
-              {contentSections[item.key]?.[currentLang] || contentSections[item.key]?.en || "Loading..."}
-            </p>
+          ))}
+        </section>
+
+        {/* Latest Announcements */}
+        <section>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">{t("latestNews")}</h2>
+            <Link
+              to="/announcements"
+              className="flex items-center text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
+            >
+              View All
+              <ArrowRight className="w-4 h-4 ml-1" />
+            </Link>
           </div>
-        ))}
-      </section>
 
-      {/* Latest Announcements */}
-      <section>
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">{t("latestNews")}</h2>
-          <Link
-            to="/announcements"
-            className="flex items-center text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
-          >
-            View All
-            <ArrowRight className="w-4 h-4 ml-1" />
-          </Link>
-        </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {announcements.map((announcement) => {
+              const imageSrc =
+                announcement.image_url ||
+                (announcement.image_path ? `${API_URL}/storage/${announcement.image_path}` : null);
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {announcements.map((announcement) => {
-            const imageSrc =
-              announcement.image_url ||
-              (announcement.image_path ? `${API_URL}/storage/${announcement.image_path}` : null);
+              return (
+                <div key={announcement.id} className="card hover:shadow-lg transition-shadow">
+                  {imageSrc ? (
+                    <img
+                      src={imageSrc}
+                      className="w-full h-48 object-cover rounded-lg mb-4"
+                      alt="" // don't show alt
+                    />
+                  ) : (
+                    <div className="w-full h-48 mb-4 flex items-center justify-center bg-gray-800/20 dark:bg-gray-700 rounded-lg">
+                      <span className="text-gray-500">{t("")}</span>
+                    </div>
+                  )}
 
-            return (
-              <div key={announcement.id} className="card hover:shadow-lg transition-shadow">
-                {imageSrc ? (
-                  <img
-                    src={imageSrc}
-                    className="w-full h-48 object-cover rounded-lg mb-4"
-                    alt="" // don't show alt
-                  />
-                ) : (
-                  <div className="w-full h-48 mb-4 flex items-center justify-center bg-gray-800/20 dark:bg-gray-700 rounded-lg">
-                    <span className="text-gray-500">{t("")}</span>
-                  </div>
-                )}
-
-                <div className="flex items-center space-x-2 mb-2">
-                  <span
-                    className={`badge ${announcement.priority === "high"
+                  <div className="flex items-center space-x-2 mb-2">
+                    <span
+                      className={`badge ${announcement.priority === "high"
                         ? "badge-danger"
                         : announcement.priority === "medium"
                           ? "badge-warning"
                           : "badge-success"
-                      }`}
+                        }`}
+                    >
+                      {announcement.priority}
+                    </span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      {new Date(announcement.published_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                    {announcement.title[currentLang] || announcement.title.en}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 line-clamp-3 mb-4">
+                    {announcement.content[currentLang] || announcement.content.en}
+                  </p>
+                  <Link
+                    to={`/announcements/${announcement.id}`}
+                    className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium flex items-center"
                   >
-                    {announcement.priority}
-                  </span>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    {new Date(announcement.published_at).toLocaleDateString()}
-                  </span>
+                    {t("readMore")}
+                    <ArrowRight className="w-4 h-4 ml-1" />
+                  </Link>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                  {announcement.title[currentLang] || announcement.title.en}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 line-clamp-3 mb-4">
-                  {announcement.content[currentLang] || announcement.content.en}
-                </p>
-                <Link
-                  to={`/announcements/${announcement.id}`}
-                  className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium flex items-center"
-                >
-                  {t("readMore")}
-                  <ArrowRight className="w-4 h-4 ml-1" />
-                </Link>
-              </div>
-            );
-          })}
-        </div>
-      </section>
+              );
+            })}
+          </div>
+        </section>
 
 
-      {/* Subscribe Section */}
-      <section className="bg-gradient-to-r from-primary-50 to-primary-100 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-8 text-center">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">{t("subscribeTitle")}</h2>
-        <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-2xl mx-auto">{t("subscribeText")}</p>
-        <Link to="/subscribe" className="primary-btn inline-block">{t("subscribeButton")}</Link>
-      </section>
+        {/* Subscribe Section */}
+        <section className="bg-gradient-to-r from-primary-50 to-primary-100 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-8 text-center">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">{t("subscribeTitle")}</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-2xl mx-auto">{t("subscribeText")}</p>
+          <Link to="/subscribe" className="primary-btn inline-block">{t("subscribeButton")}</Link>
+        </section>
+      </div>
     </div>
   );
 }

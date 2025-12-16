@@ -12,23 +12,26 @@ export default function AnnouncementDetail() {
   const [announcement, setAnnouncement] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const currentLang = i18n.language;
+
   useEffect(() => {
     fetchAnnouncement();
   }, [id]);
 
   async function fetchAnnouncement() {
+    setLoading(true);
     try {
       const res = await fetch(`${API_URL}/announcements/${id}`);
+      if (!res.ok) throw new Error("Announcement not found");
       const data = await res.json();
       setAnnouncement(data);
     } catch (error) {
       console.error("Error fetching announcement:", error);
+      setAnnouncement(null);
     } finally {
       setLoading(false);
     }
   }
-
-  const currentLang = i18n.language;
 
   if (loading) return (
     <div className="flex justify-center items-center min-h-[400px]">
@@ -49,60 +52,60 @@ export default function AnnouncementDetail() {
   const hasImage = Boolean(announcement.image_url);
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <button
-        onClick={() => navigate(-1)}
-        className="flex items-center text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
-      >
-        <ArrowLeft className="w-4 h-4 mr-1" />
-        {t('back')}
-      </button>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 py-12">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
+        >
+          <ArrowLeft className="w-4 h-4 mr-1" />
+          {t('back')}
+        </button>
 
-      <div className="card">
+        <div className="card">
 
-        {/* ✅ Only show image if available */}
-        {hasImage && (
-          <img
-            src={announcement.image_url}
-            alt={announcement.title[currentLang] || announcement.title.en}
-            className="w-full h-96 object-cover rounded-lg mb-6"
-          />
-        )}
-
-        <div className="flex flex-wrap items-center gap-3 mb-4">
-          <span className={`badge ${
-            announcement.priority === 'high' ? 'badge-danger' :
-            announcement.priority === 'medium' ? 'badge-warning' :
-            'badge-success'
-          }`}>
-            <Tag className="w-3 h-3 inline mr-1" />
-            {announcement.priority}
-          </span>
-
-          <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
-            <Calendar className="w-4 h-4 mr-1" />
-            {new Date(announcement.published_at).toLocaleDateString(
-              currentLang === 'tl' ? 'tl-PH' : 'en-US',
-              { year: 'numeric', month: 'long', day: 'numeric' }
-            )}
-          </span>
-
-          {announcement.creator && (
-            <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
-              <User className="w-4 h-4 mr-1" />
-              {announcement.creator.name}
-            </span>
+          {hasImage && (
+            <img
+              src={announcement.image_url}
+              alt={announcement.title[currentLang] || announcement.title.en}
+              className="w-full h-96 object-cover rounded-lg mb-6"
+            />
           )}
-        </div>
 
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">
-          {announcement.title[currentLang] || announcement.title.en}
-        </h1>
+          <div className="flex flex-wrap items-center gap-3 mb-4">
+            <span className={`badge ${announcement.priority === 'high' ? 'badge-danger' :
+                announcement.priority === 'medium' ? 'badge-warning' :
+                  'badge-success'
+              }`}>
+              <Tag className="w-3 h-3 inline mr-1" />
+              {announcement.priority || 'Normal'}
+            </span>
 
-        <div className="prose dark:prose-invert max-w-none">
-          <p className="text-gray-600 dark:text-gray-400 text-lg leading-relaxed whitespace-pre-line">
-            {announcement.content[currentLang] || announcement.content.en}
-          </p>
+            <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
+              <Calendar className="w-4 h-4 mr-1" />
+              {new Date(announcement.published_at).toLocaleDateString(
+                currentLang === 'tl' ? 'tl-PH' : 'en-US',
+                { year: 'numeric', month: 'long', day: 'numeric' }
+              )}
+            </span>
+
+            {announcement.creator?.name && (
+              <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                <User className="w-4 h-4 mr-1" />
+                {announcement.creator.name}
+              </span>
+            )}
+          </div>
+
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">
+            {announcement.title[currentLang] || announcement.title.en}
+          </h1>
+
+          <div className="prose dark:prose-invert max-w-none">
+            <p className="text-gray-600 dark:text-gray-400 text-lg leading-relaxed whitespace-pre-line">
+              {announcement.content[currentLang] || announcement.content.en}
+            </p>
+          </div>
         </div>
       </div>
     </div>

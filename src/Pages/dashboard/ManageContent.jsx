@@ -81,97 +81,99 @@ export default function ManageContent() {
   }
 
   return (
-    <div className="space-y-6 text-gray-900 dark:text-white">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Link
-            to="/dashboard"
-            className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
-          >
-            <ArrowLeft className="w-6 h-6" />
-          </Link>
-          <h1 className="title mb-0">{t("Manage Content")}</h1>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 py-12">
+      <div className="space-y-6 text-gray-900 dark:text-white">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Link
+              to="/dashboard"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+            >
+              <ArrowLeft className="w-6 h-6" />
+            </Link>
+            <h1 className="title mb-0">{t("Manage Content")}</h1>
+          </div>
         </div>
-      </div>
 
-      {message && (
-        <div className="bg-primary-50 dark:bg-primary-900 border border-primary-200 dark:border-primary-700 rounded-lg p-4">
-          <p className="text-primary-600 dark:text-white">{message}</p>
-        </div>
-      )}
+        {message && (
+          <div className="bg-primary-50 dark:bg-primary-900 border border-primary-200 dark:border-primary-700 rounded-lg p-4">
+            <p className="text-primary-600 dark:text-white">{message}</p>
+          </div>
+        )}
 
-      <div className="space-y-6">
-        {sections.map((section) => (
-          <div
-            key={section.id}
-            className="card bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4"
-          >
-            <div className="flex justify-between items-start mb-4">
-              <h2 className="text-2xl font-bold capitalize text-gray-900 dark:text-white">{section.key}</h2>
-              {editingSection !== section.id && (
-                <button onClick={() => startEditing(section)} className="primary-btn">
-                  {t("edit")}
-                </button>
-              )}
-            </div>
-
-            {editingSection === section.id ? (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">
-                    {t("Content")}
-                  </label>
-                  <textarea
-                    value={formData.content.en}
-                    onChange={(e) =>
-                      setFormData({
-                        content: { en: e.target.value },
-                      })
-                    }
-                    rows="6"
-                    disabled={saving} // disable while saving
-                    className="input-field bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg p-2 w-full"
-                  />
-                </div>
-
-                <div className="flex space-x-3">
-                  <button
-                    onClick={() => handleUpdate(section.id)}
-                    disabled={saving}
-                    className="primary-btn flex items-center space-x-2"
-                  >
-                    {saving ? (
-                      <div className="flex items-center space-x-2">
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                        <span>{t("Saving")}...</span>
-                      </div>
-                    ) : (
-                      <>
-                        <Save className="w-4 h-4" />
-                        <span>{t("save")}</span>
-                      </>
-                    )}
+        <div className="space-y-6">
+          {sections.map((section) => (
+            <div
+              key={section.id}
+              className="card bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4"
+            >
+              <div className="flex justify-between items-start mb-4">
+                <h2 className="text-2xl font-bold capitalize text-gray-900 dark:text-white">{section.key}</h2>
+                {editingSection !== section.id && (
+                  <button onClick={() => startEditing(section)} className="primary-btn">
+                    {t("edit")}
                   </button>
-                  <button onClick={() => setEditingSection(null)} className="secondary-btn">
-                    {t("cancel")}
-                  </button>
-                </div>
+                )}
               </div>
-            ) : (
-              <div className="space-y-4">
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">{t("English")}:</p>
-                  <p className="text-gray-700 dark:text-white">{section.content.en}</p>
-                </div>
 
-                {/* <div>
+              {editingSection === section.id ? (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">
+                      {t("Content")}
+                    </label>
+                    <textarea
+                      value={formData.content.en}
+                      onChange={(e) =>
+                        setFormData({
+                          content: { en: e.target.value },
+                        })
+                      }
+                      rows="6"
+                      disabled={saving} // disable while saving
+                      className="input-field bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg p-2 w-full"
+                    />
+                  </div>
+
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={() => handleUpdate(section.id)}
+                      disabled={saving}
+                      className="primary-btn flex items-center space-x-2"
+                    >
+                      {saving ? (
+                        <div className="flex items-center space-x-2">
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                          <span>{t("Saving")}...</span>
+                        </div>
+                      ) : (
+                        <>
+                          <Save className="w-4 h-4" />
+                          <span>{t("save")}</span>
+                        </>
+                      )}
+                    </button>
+                    <button onClick={() => setEditingSection(null)} className="secondary-btn">
+                      {t("cancel")}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-white">{t("English")}:</p>
+                    <p className="text-gray-700 dark:text-white">{section.content.en}</p>
+                  </div>
+
+                  {/* <div>
                   <p className="font-medium text-gray-900 dark:text-white">{t("Tagalog")}:</p>
                   <p className="text-gray-700 dark:text-white">{section.content.tl || t("Not set")}</p>
                 </div> */}
-              </div>
-            )}
-          </div>
-        ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

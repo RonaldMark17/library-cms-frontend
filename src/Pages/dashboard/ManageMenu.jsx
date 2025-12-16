@@ -67,8 +67,23 @@ export default function ManageMenu() {
       const tlLabel = await translateToTagalog(formData.label.en);
       const payload = { ...formData, label: { en: formData.label.en, tl: tlLabel } };
 
-      const url = editingId ? `${API_URL}/menu-items/${editingId}` : `${API_URL}/menu-items`;
-      const method = editingId ? "PUT" : "POST";
+      // Check if item exists (by URL or label)
+      const existingItem = menuItems.find(
+        (item) => item.url === formData.url || item.label?.en === formData.label.en
+      );
+
+      let url, method;
+      if (editingId) {
+        url = `${API_URL}/menu-items/${editingId}`;
+        method = "PUT";
+      } else if (existingItem) {
+        // Update the existing item instead of creating a new one
+        url = `${API_URL}/menu-items/${existingItem.id}`;
+        method = "PUT";
+      } else {
+        url = `${API_URL}/menu-items`;
+        method = "POST";
+      }
 
       const res = await fetch(url, {
         method,
@@ -78,8 +93,8 @@ export default function ManageMenu() {
 
       if (res.ok) {
         const savedItem = await res.json();
-        if (editingId) {
-          setMenuItems(menuItems.map(item => item.id === editingId ? savedItem : item));
+        if (editingId || existingItem) {
+          setMenuItems(menuItems.map(item => (item.id === savedItem.id ? savedItem : item)));
           setMessage(t("Menu Updated"));
         } else {
           setMenuItems([...menuItems, savedItem]);
@@ -97,6 +112,7 @@ export default function ManageMenu() {
       setSubmitting(false);
     }
   }
+
 
   async function handleToggleActive(id) {
     try {
@@ -142,151 +158,152 @@ export default function ManageMenu() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Link to="/dashboard" className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300">
-            <ArrowLeft className="w-6 h-6" />
-          </Link>
-          <h1 className="title mb-0 text-gray-900 dark:text-white">{t("Manage Menu")}</h1>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 py-12">
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Link to="/dashboard" className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300">
+              <ArrowLeft className="w-6 h-6" />
+            </Link>
+            <h1 className="title mb-0 text-gray-900 dark:text-white">{t("Manage Menu")}</h1>
+          </div>
+          <button
+            onClick={() => { resetForm(); setShowModal(true); }}
+            className="primary-btn flex items-center space-x-2 bg-primary-600 hover:bg-primary-700 dark:bg-primary-400 dark:hover:bg-primary-500 text-white dark:text-gray-900 px-4 py-2 rounded"
+          >
+            <Plus className="w-5 h-5" />
+            <span>{t("Add Menu Item")}</span>
+          </button>
         </div>
-        <button
-          onClick={() => { resetForm(); setShowModal(true); }}
-          className="primary-btn flex items-center space-x-2 bg-primary-600 hover:bg-primary-700 dark:bg-primary-400 dark:hover:bg-primary-500 text-white dark:text-gray-900 px-4 py-2 rounded"
-        >
-          <Plus className="w-5 h-5" />
-          <span>{t("Add Menu Item")}</span>
-        </button>
-      </div>
 
-      {/* Message */}
-      {message && (
-        <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg p-4">
-          <p className="text-primary-600 dark:text-primary-400">{message}</p>
-        </div>
-      )}
+        {/* Message */}
+        {message && (
+          <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg p-4">
+            <p className="text-primary-600 dark:text-primary-400">{message}</p>
+          </div>
+        )}
 
-      {/* Menu List */}
-      <div className="card bg-white dark:bg-gray-800 rounded-lg shadow">
-        <div className="space-y-2">
-          {menuItems.map((item, index) => (
-            <div
-              key={item.id}
-              className={`flex items-center justify-between p-4 rounded-lg transition-colors ${
-                item.is_active
+        {/* Menu List */}
+        <div className="card bg-white dark:bg-gray-800 rounded-lg shadow">
+          <div className="space-y-2">
+            {menuItems.map((item, index) => (
+              <div
+                key={item.id}
+                className={`flex items-center justify-between p-4 rounded-lg transition-colors ${item.is_active
                   ? "bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600"
                   : "bg-gray-200 dark:bg-gray-600 opacity-70"
-              }`}
-            >
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-900 dark:text-white">
-                   {item.label?.en || ""} 
-                   {/*<span className="text-sm text-gray-500 dark:text-gray-400">({item.label?.tl || ""})</span> */}
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{item.type} • {item.url || t("noURL")}</p>
+                  }`}
+              >
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-900 dark:text-white">
+                    {item.label?.en || ""}
+                    {/*<span className="text-sm text-gray-500 dark:text-gray-400">({item.label?.tl || ""})</span> */}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{item.type} • {item.url || t("noURL")}</p>
+                </div>
+                <div className="flex space-x-2">
+                  <button onClick={() => moveItem(index, "up")} disabled={index === 0} className="secondary-btn p-2 disabled:opacity-50">
+                    <MoveUp className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => moveItem(index, "down")} disabled={index === menuItems.length - 1} className="secondary-btn p-2 disabled:opacity-50">
+                    <MoveDown className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => startEditing(item)} className="secondary-btn p-2">
+                    <Edit className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleToggleActive(item.id)}
+                    className="danger-btn p-2"
+                    title={item.is_active ? t("Hide Menu Item") : t("Unhide Menu Item")}
+                  >
+                    {item.is_active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
-              <div className="flex space-x-2">
-                <button onClick={() => moveItem(index, "up")} disabled={index === 0} className="secondary-btn p-2 disabled:opacity-50">
-                  <MoveUp className="w-4 h-4" />
-                </button>
-                <button onClick={() => moveItem(index, "down")} disabled={index === menuItems.length - 1} className="secondary-btn p-2 disabled:opacity-50">
-                  <MoveDown className="w-4 h-4" />
-                </button>
-                <button onClick={() => startEditing(item)} className="secondary-btn p-2">
-                  <Edit className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => handleToggleActive(item.id)}
-                  className="danger-btn p-2"
-                  title={item.is_active ? t("Hide Menu Item") : t("Unhide Menu Item")}
-                >
-                  {item.is_active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl shadow-lg transition-colors">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{editingId ? t("editMenuItem") : t("Add Menu Item")}</h2>
-              <button onClick={() => { setShowModal(false); resetForm(); }} className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white">
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-gray-700 dark:text-gray-200">{t("Label")}</label>
-                <input
-                  type="text"
-                  value={formData.label.en}
-                  onChange={(e) => setFormData({ ...formData, label: { en: e.target.value } })}
-                  className="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-gray-700 dark:text-gray-200">{t("URL")}</label>
-                <input
-                  type="text"
-                  value={formData.url}
-                  onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                  className="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                />
-              </div>
-
-              <div>
-                <label className="block text-gray-700 dark:text-gray-200">{t("Type")}</label>
-                <select
-                  value={formData.type}
-                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                  className="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                >
-                  <option value="page">{t("Page")}</option>
-                  <option value="link">{t("Link")}</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-gray-700 dark:text-gray-200">{t("Parent Menu")}</label>
-                <select
-                  value={formData.parent_id || ""}
-                  onChange={(e) => setFormData({ ...formData, parent_id: e.target.value || null })}
-                  className="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                >
-                  <option value="">{t("None")}</option>
-                  {menuItems.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.label?.en || ""}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex justify-end space-x-2">
-                <button type="button" onClick={() => { setShowModal(false); resetForm(); }} className="secondary-btn px-4 py-2">
-                  {t("Cancel")}
-                </button>
-                <button type="submit" className="primary-btn px-4 py-2" disabled={submitting}>
-                  {submitting ? (
-                    <div className="flex items-center space-x-2">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      <span>{editingId ? t("Updating") : t("Saving")}...</span>
-                    </div>
-                  ) : editingId ? t("Update") : t("Save")}
-                </button>
-              </div>
-            </form>
+            ))}
           </div>
         </div>
-      )}
+
+        {/* Modal */}
+        {showModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl shadow-lg transition-colors">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{editingId ? t("editMenuItem") : t("Add Menu Item")}</h2>
+                <button onClick={() => { setShowModal(false); resetForm(); }} className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-gray-700 dark:text-gray-200">{t("Label")}</label>
+                  <input
+                    type="text"
+                    value={formData.label.en}
+                    onChange={(e) => setFormData({ ...formData, label: { en: e.target.value } })}
+                    className="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 dark:text-gray-200">{t("URL")}</label>
+                  <input
+                    type="text"
+                    value={formData.url}
+                    onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                    className="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 dark:text-gray-200">{t("Type")}</label>
+                  <select
+                    value={formData.type}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                    className="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  >
+                    <option value="page">{t("Page")}</option>
+                    <option value="link">{t("Link")}</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 dark:text-gray-200">{t("Parent Menu")}</label>
+                  <select
+                    value={formData.parent_id || ""}
+                    onChange={(e) => setFormData({ ...formData, parent_id: e.target.value || null })}
+                    className="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  >
+                    <option value="">{t("None")}</option>
+                    {menuItems.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.label?.en || ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex justify-end space-x-2">
+                  <button type="button" onClick={() => { setShowModal(false); resetForm(); }} className="secondary-btn px-4 py-2">
+                    {t("Cancel")}
+                  </button>
+                  <button type="submit" className="primary-btn px-4 py-2" disabled={submitting}>
+                    {submitting ? (
+                      <div className="flex items-center space-x-2">
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                        <span>{editingId ? t("Updating") : t("Saving")}...</span>
+                      </div>
+                    ) : editingId ? t("Update") : t("Save")}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

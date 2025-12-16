@@ -17,6 +17,7 @@ export default function Dashboard() {
   const { t } = useTranslation();
   const [stats, setStats] = useState({ users: 0, announcements: 0 });
 
+  // Access control
   if (!user || (user.role !== 'admin' && user.role !== 'librarian')) {
     return (
       <div className="text-center py-12">
@@ -40,6 +41,7 @@ export default function Dashboard() {
       .catch(err => console.error("API fetch error:", err));
   }, [user]);
 
+  // Dashboard sections
   const adminSections = [
     {
       title: t('manageContent'),
@@ -89,84 +91,80 @@ export default function Dashboard() {
     });
   }
 
-  // Filter sections based on role
-  const filteredSections = adminSections.filter(section => {
-    // Hide "Manage Staff" for librarians
-    if (section.title === t('manageStaff') && user.role !== "admin") {
-      return false;
-    }
-    return true;
-  });
+  // No need to filter "Manage Staff" for librarians anymore
+  const filteredSections = adminSections;
+
+  const colorClasses = {
+    primary: "bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-400",
+    green: "bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400",
+    yellow: "bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-400",
+    purple: "bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400",
+    blue: "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400",
+    red: "bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400",
+    gray: "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
+  };
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="title">{t('dashboard')}</h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Manage your library content and settings
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="card">
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-            Quick Stats
-          </h3>
-          <p className="text-3xl font-bold text-primary-600 dark:text-primary-400">
-            {stats.users} Users
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 py-12">
+      <div className="space-y-8">
+        <div>
+          <h1 className="title">{t('dashboard')}</h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Manage your library content and settings
           </p>
         </div>
 
-        <div className="card">
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-            Your Role
-          </h3>
-          <span className="badge badge-primary text-lg capitalize">
-            {user.role}
-          </span>
-        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="card">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+              Quick Stats
+            </h3>
+            <p className="text-3xl font-bold text-primary-600 dark:text-primary-400">
+              {stats.users} Users
+            </p>
+          </div>
 
-        <div className="card">
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-            System Status
-          </h3>
-          <span className={`badge text-lg ${user.role === "admin"
+          <div className="card">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+              Your Role
+            </h3>
+            <span className="badge badge-primary text-lg capitalize">
+              {user.role}
+            </span>
+          </div>
+
+          <div className="card">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+              System Status
+            </h3>
+            <span className={`badge text-lg ${user.role === "admin"
               ? "badge-success"
               : "badge-warning"
-            }`}>
-            {user.role === "admin" ? "All Systems Operational" : "Some Systems Operational"}
-          </span>
+              }`}>
+              {user.role === "admin" ? "All Systems Operational" : "Some Systems Operational"}
+            </span>
+          </div>
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredSections.map((section, index) => {
-          const Icon = section.icon;
-          const colorClasses = {
-            primary: "bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-400",
-            green: "bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400",
-            yellow: "bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-400",
-            purple: "bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400",
-            blue: "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400",
-            red: "bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400",
-            gray: "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
-          };
-
-          return (
-            <Link
-              key={index}
-              to={section.link}
-              className="card hover:shadow-lg transition-all group"
-            >
-              <div className={`w-16 h-16 rounded-lg ${colorClasses[section.color]} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                <Icon className="w-8 h-8" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-                {section.title}
-              </h3>
-            </Link>
-          );
-        })}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredSections.map((section, index) => {
+            const Icon = section.icon;
+            return (
+              <Link
+                key={index}
+                to={section.link}
+                className="card hover:shadow-lg transition-all group"
+              >
+                <div className={`w-16 h-16 rounded-lg ${colorClasses[section.color]} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                  <Icon className="w-8 h-8" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                  {section.title}
+                </h3>
+              </Link>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

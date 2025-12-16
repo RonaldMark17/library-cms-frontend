@@ -47,48 +47,50 @@ export default function Unsubscribe() {
   const iconProps = "w-16 h-16 mx-auto mb-4";
 
   return (
-    <div className="max-w-md mx-auto mt-12">
-      <div className="card text-center p-6 shadow rounded bg-white dark:bg-gray-900 dark:text-white">
-        
-        {status === "loading" && (
-          <>
-            <Loader className={`${iconProps} text-blue-600 animate-spin`} />
-            <h2 className="text-2xl font-bold mb-2 dark:text-white">Processing...</h2>
-            <p className="dark:text-gray-300">Please wait while we unsubscribe you...</p>
-          </>
-        )}
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 py-12">
+      <div className="max-w-md mx-auto mt-12">
+        <div className="card text-center p-6 shadow rounded bg-white dark:bg-gray-900 dark:text-white">
 
-        {status === "success" && (
-          <>
-            <CheckCircle className={`${iconProps} text-green-600`} />
-            <h2 className="text-2xl font-bold mb-2 dark:text-white">Unsubscribed!</h2>
-            <p className="dark:text-gray-300">{message}</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Redirecting to homepage...</p>
-          </>
-        )}
+          {status === "loading" && (
+            <>
+              <Loader className={`${iconProps} text-blue-600 animate-spin`} />
+              <h2 className="text-2xl font-bold mb-2 dark:text-white">Processing...</h2>
+              <p className="dark:text-gray-300">Please wait while we unsubscribe you...</p>
+            </>
+          )}
 
-        {status === "error" && (
-          <>
-            <XCircle className={`${iconProps} text-red-600`} />
-            <h2 className="text-2xl font-bold mb-2 dark:text-white">Error</h2>
-            <p className="dark:text-gray-300">{message}</p>
-            <button
-              onClick={() => navigate("/")}
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
-            >
-              Go to Home
-            </button>
-          </>
-        )}
+          {status === "success" && (
+            <>
+              <CheckCircle className={`${iconProps} text-green-600`} />
+              <h2 className="text-2xl font-bold mb-2 dark:text-white">Unsubscribed!</h2>
+              <p className="dark:text-gray-300">{message}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Redirecting to homepage...</p>
+            </>
+          )}
 
-        {status === "info" && (
-          <>
-            <CheckCircle className={`${iconProps} text-blue-600`} />
-            <h2 className="text-2xl font-bold mb-2 dark:text-white">Notice</h2>
-            <p className="dark:text-gray-300">{message}</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Redirecting to homepage...</p>
-          </>
-        )}
+          {status === "error" && (
+            <>
+              <XCircle className={`${iconProps} text-red-600`} />
+              <h2 className="text-2xl font-bold mb-2 dark:text-white">Error</h2>
+              <p className="dark:text-gray-300">{message}</p>
+              <button
+                onClick={() => navigate("/")}
+                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
+              >
+                Go to Home
+              </button>
+            </>
+          )}
+
+          {status === "info" && (
+            <>
+              <CheckCircle className={`${iconProps} text-blue-600`} />
+              <h2 className="text-2xl font-bold mb-2 dark:text-white">Notice</h2>
+              <p className="dark:text-gray-300">{message}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Redirecting to homepage...</p>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

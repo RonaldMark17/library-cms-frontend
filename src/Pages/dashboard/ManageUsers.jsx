@@ -128,211 +128,210 @@ export default function ManageUsers() {
     );
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Link to="/dashboard" className="text-primary-600 dark:text-primary-400">
-            <ArrowLeft className="w-6 h-6" />
-          </Link>
-          <h1 className="title mb-0">Manage Users</h1>
-        </div>
-        <button
-          onClick={() => {
-            resetForm();
-            setShowModal(true);
-          }}
-          className="primary-btn flex items-center space-x-2"
-        >
-          <Plus className="w-5 h-5" />
-          <span>{editingId ? "Edit User" : "Create New User"}</span>
-        </button>
-      </div>
-
-      {/* Message */}
-      {message && (
-        <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg p-4">
-          <p className="text-primary-600 dark:text-primary-400">{message}</p>
-        </div>
-      )}
-
-      {/* Users Table */}
-      <div className="card overflow-x-auto">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="border-b border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900">
-              <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white">Name</th>
-              <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white">Email</th>
-              <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white">Role</th>
-              <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white">2FA</th>
-              <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white">Status</th>
-              <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr
-                key={user.id}
-                className={`border-b border-gray-200 dark:border-gray-800 ${
-                  user.disabled ? "opacity-50" : ""
-                } hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors`}
-              >
-                <td className="py-3 px-4 text-gray-700 dark:text-white">{user.name}</td>
-                <td className="py-3 px-4 text-gray-700 dark:text-white">{user.email}</td>
-                <td className="py-3 px-4">
-                  <span className="badge badge-primary capitalize">{user.role}</span>
-                </td>
-                <td className="py-3 px-4">
-                  {user.two_factor_enabled ? (
-                    <ShieldCheck className="w-5 h-5 text-green-600" />
-                  ) : (
-                    <ShieldCheck className="w-5 h-5 text-gray-400 dark:text-gray-500" />
-                  )}
-                </td>
-                <td className="py-3 px-4 text-gray-700 dark:text-white">
-                  {user.disabled ? "Disabled" : "Active"}
-                </td>
-                <td className="py-3 px-4 flex items-center space-x-3">
-                  <button
-                    onClick={() => startEditing(user)}
-                    className="text-blue-600 hover:text-blue-700 dark:text-blue-400 flex items-center space-x-1"
-                  >
-                    <Edit className="w-5 h-5" />
-                  </button>
-
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      className="sr-only peer"
-                      checked={!user.disabled}
-                      onChange={() => handleToggleDisable(user.id)}
-                    />
-                    <div
-                      className={`w-12 h-6 rounded-full transition-colors duration-300 ${
-                        !user.disabled
-                          ? "bg-green-500 dark:bg-green-600"
-                          : "bg-red-500 dark:bg-red-600"
-                      }`}
-                    ></div>
-                    <div
-                      className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-300 ${
-                        !user.disabled ? "translate-x-6" : "translate-x-0"
-                      }`}
-                    ></div>
-                  </label>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Modal for Create/Edit */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                {editingId ? "Edit User" : "Create New User"}
-              </h2>
-              <button
-                onClick={() => setShowModal(false)}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Name *
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="input-field dark:bg-gray-700 dark:text-white dark:border-gray-600"
-                  required
-                />
-                {errors.name && <p className="error-text">{errors.name[0]}</p>}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Email *
-                </label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="input-field dark:bg-gray-700 dark:text-white dark:border-gray-600"
-                  required
-                />
-                {errors.email && <p className="error-text">{errors.email[0]}</p>}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Role *
-                </label>
-                <select
-                  value={formData.role}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                  className="input-field dark:bg-gray-700 dark:text-white dark:border-gray-600"
-                  required
-                >
-                  <option value="staff">Staff</option>
-                  <option value="librarian">Librarian</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
-
-              {!editingId && (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Password *
-                    </label>
-                    <input
-                      type="password"
-                      value={formData.password}
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      className="input-field dark:bg-gray-700 dark:text-white dark:border-gray-600"
-                      required
-                    />
-                    {errors.password && <p className="error-text">{errors.password[0]}</p>}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Confirm Password *
-                    </label>
-                    <input
-                      type="password"
-                      value={formData.password_confirmation}
-                      onChange={(e) =>
-                        setFormData({ ...formData, password_confirmation: e.target.value })
-                      }
-                      className="input-field dark:bg-gray-700 dark:text-white dark:border-gray-600"
-                      required
-                    />
-                  </div>
-                </>
-              )}
-
-              <div className="flex space-x-3 pt-4">
-                <button type="submit" className="primary-btn flex-1" disabled={submitting}>
-                  {submitting ? "Saving..." : editingId ? "Update User" : "Create User"}
-                </button>
-                <button type="button" onClick={() => setShowModal(false)} className="secondary-btn">
-                  {t("cancel")}
-                </button>
-              </div>
-            </form>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 py-12">
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Link to="/dashboard" className="text-primary-600 dark:text-primary-400">
+              <ArrowLeft className="w-6 h-6" />
+            </Link>
+            <h1 className="title mb-0">Manage Users</h1>
           </div>
+          <button
+            onClick={() => {
+              resetForm();
+              setShowModal(true);
+            }}
+            className="primary-btn flex items-center space-x-2"
+          >
+            <Plus className="w-5 h-5" />
+            <span>{editingId ? "Edit User" : "Create New User"}</span>
+          </button>
         </div>
-      )}
+
+        {/* Message */}
+        {message && (
+          <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg p-4">
+            <p className="text-primary-600 dark:text-primary-400">{message}</p>
+          </div>
+        )}
+
+        {/* Users Table */}
+        <div className="card overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="border-b border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900">
+                <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white">Name</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white">Email</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white">Role</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white">2FA</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white">Status</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((user) => (
+                <tr
+                  key={user.id}
+                  className={`border-b border-gray-200 dark:border-gray-800 ${user.disabled ? "opacity-50" : ""
+                    } hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors`}
+                >
+                  <td className="py-3 px-4 text-gray-700 dark:text-white">{user.name}</td>
+                  <td className="py-3 px-4 text-gray-700 dark:text-white">{user.email}</td>
+                  <td className="py-3 px-4">
+                    <span className="badge badge-primary capitalize">{user.role}</span>
+                  </td>
+                  <td className="py-3 px-4">
+                    {user.two_factor_enabled ? (
+                      <ShieldCheck className="w-5 h-5 text-green-600" />
+                    ) : (
+                      <ShieldCheck className="w-5 h-5 text-gray-400 dark:text-gray-500" />
+                    )}
+                  </td>
+                  <td className="py-3 px-4 text-gray-700 dark:text-white">
+                    {user.disabled ? "Disabled" : "Active"}
+                  </td>
+                  <td className="py-3 px-4 flex items-center space-x-3">
+                    <button
+                      onClick={() => startEditing(user)}
+                      className="text-blue-600 hover:text-blue-700 dark:text-blue-400 flex items-center space-x-1"
+                    >
+                      <Edit className="w-5 h-5" />
+                    </button>
+
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={!user.disabled}
+                        onChange={() => handleToggleDisable(user.id)}
+                      />
+                      <div
+                        className={`w-12 h-6 rounded-full transition-colors duration-300 ${!user.disabled
+                            ? "bg-green-500 dark:bg-green-600"
+                            : "bg-red-500 dark:bg-red-600"
+                          }`}
+                      ></div>
+                      <div
+                        className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-300 ${!user.disabled ? "translate-x-6" : "translate-x-0"
+                          }`}
+                      ></div>
+                    </label>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Modal for Create/Edit */}
+        {showModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {editingId ? "Edit User" : "Create New User"}
+                </h2>
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="input-field dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                    required
+                  />
+                  {errors.name && <p className="error-text">{errors.name[0]}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Email *
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="input-field dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                    required
+                  />
+                  {errors.email && <p className="error-text">{errors.email[0]}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Role *
+                  </label>
+                  <select
+                    value={formData.role}
+                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                    className="input-field dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                    required
+                  >
+                    <option value="staff">Staff</option>
+                    <option value="librarian">Librarian</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+
+                {!editingId && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Password *
+                      </label>
+                      <input
+                        type="password"
+                        value={formData.password}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        className="input-field dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                        required
+                      />
+                      {errors.password && <p className="error-text">{errors.password[0]}</p>}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Confirm Password *
+                      </label>
+                      <input
+                        type="password"
+                        value={formData.password_confirmation}
+                        onChange={(e) =>
+                          setFormData({ ...formData, password_confirmation: e.target.value })
+                        }
+                        className="input-field dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                        required
+                      />
+                    </div>
+                  </>
+                )}
+
+                <div className="flex space-x-3 pt-4">
+                  <button type="submit" className="primary-btn flex-1" disabled={submitting}>
+                    {submitting ? "Saving..." : editingId ? "Update User" : "Create User"}
+                  </button>
+                  <button type="button" onClick={() => setShowModal(false)} className="secondary-btn">
+                    {t("cancel")}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

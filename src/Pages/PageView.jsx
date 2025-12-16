@@ -59,23 +59,25 @@ export default function PageView() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
-      <button
-        onClick={() => navigate(-1)}
-        className="flex items-center text-primary-600 dark:text-primary-400 hover:text-primary-700"
-      >
-        <ArrowLeft className="w-4 h-4 mr-1" />
-        {t('back') || "Back"}
-      </button>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 py-12">
+      <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center text-primary-600 dark:text-primary-400 hover:text-primary-700"
+        >
+          <ArrowLeft className="w-4 h-4 mr-1" />
+          {t('back') || "Back"}
+        </button>
 
-      <div className="card">
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">
-          {page.title[currentLang] || page.title.en}
-        </h1>
+        <div className="card">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">
+            {page.title[currentLang] || page.title.en}
+          </h1>
 
-        <div className="prose dark:prose-invert max-w-none">
-          <div className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
-            {page.content[currentLang] || page.content.en}
+          <div className="prose dark:prose-invert max-w-none">
+            <div className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
+              {page.content[currentLang] || page.content.en}
+            </div>
           </div>
         </div>
       </div>

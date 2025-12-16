@@ -142,98 +142,100 @@ export default function Search() {
   }
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="title flex items-center text-gray-900 dark:text-gray-100">
-          <SearchIcon className="w-8 h-8 mr-3" />
-          {t("search")} Results
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Found {total} results for "{query}"
-        </p>
-      </div>
-
-      {total === 0 ? (
-        <div className="card text-center py-12">
-          <SearchIcon className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 py-12">
+      <div className="space-y-8">
+        <div>
+          <h1 className="title flex items-center text-gray-900 dark:text-gray-100">
+            <SearchIcon className="w-8 h-8 mr-3" />
+            {t("search")} Results
+          </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            No results found. Try a different search term.
+            Found {total} results for "{query}"
           </p>
         </div>
-      ) : (
-        <div className="space-y-8">
-          {/* Announcements */}
-          {results.announcements.length > 0 && (
-            <div>
-              <h2 className="subtitle text-gray-900 dark:text-gray-100">
-                {t("announcements")} ({results.announcements.length})
-              </h2>
-              <div className="space-y-4">
-                {results.announcements.map(item => (
-                  <Link
-                    key={item.id}
-                    to={`/announcements/${item.id}`}
-                    className="card hover:shadow-lg transition-shadow block"
-                  >
-                    <h3 className="text-xl font-bold mb-2">
-                      {highlight(item.title[lang] || item.title.en, query)}
-                    </h3>
-                    <p className="text-gray-700 dark:text-gray-300 line-clamp-2">
-                      {highlight(item.content[lang] || item.content.en, query)}
-                    </p>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
 
-          {/* Staff */}
-          {results.staff.length > 0 && (
-            <div>
-              <h2 className="subtitle text-gray-900 dark:text-gray-100">
-                {t("staff")} ({results.staff.length})
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {results.staff.map(item => (
-                  <div key={item.id} className="card hover:shadow-lg">
-                    <h3 className="text-xl font-bold">
-                      {highlight(item.name[lang] || item.name.en, query)}
-                    </h3>
-                    <p className="text-primary-600 dark:text-primary-400">
-                      {highlight(item.role[lang] || item.role.en, query)}
-                    </p>
-                  </div>
-                ))}
+        {total === 0 ? (
+          <div className="card text-center py-12">
+            <SearchIcon className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+            <p className="text-gray-600 dark:text-gray-400">
+              No results found. Try a different search term.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-8">
+            {/* Announcements */}
+            {results.announcements.length > 0 && (
+              <div>
+                <h2 className="subtitle text-gray-900 dark:text-gray-100">
+                  {t("announcements")} ({results.announcements.length})
+                </h2>
+                <div className="space-y-4">
+                  {results.announcements.map(item => (
+                    <Link
+                      key={item.id}
+                      to={`/announcements/${item.id}`}
+                      className="card hover:shadow-lg transition-shadow block"
+                    >
+                      <h3 className="text-xl font-bold mb-2">
+                        {highlight(item.title[lang] || item.title.en, query)}
+                      </h3>
+                      <p className="text-gray-700 dark:text-gray-300 line-clamp-2">
+                        {highlight(item.content[lang] || item.content.en, query)}
+                      </p>
+                    </Link>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Pages */}
-          {results.pages.length > 0 && (
-            <div>
-              <h2 className="subtitle text-gray-900 dark:text-gray-100">
-                Pages ({results.pages.length})
-              </h2>
-              <div className="space-y-4">
-                {results.pages.map(item => (
-                  <Link
-                    key={item.id}
-                    to={item.path || `/pages/${item.slug}`}
-                    className="card hover:shadow-lg transition-shadow block"
-                  >
-                    <h3 className="text-xl font-bold mb-2">
-                      {highlight(item.title[lang] || item.title.en, query)}
-                    </h3>
-                    <p className="text-gray-700 dark:text-gray-300 line-clamp-2">
-                      {highlight(item.content[lang] || item.content.en, query)}
-                    </p>
-                  </Link>
-                ))}
+            {/* Staff */}
+            {results.staff.length > 0 && (
+              <div>
+                <h2 className="subtitle text-gray-900 dark:text-gray-100">
+                  {t("staff")} ({results.staff.length})
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {results.staff.map(item => (
+                    <div key={item.id} className="card hover:shadow-lg">
+                      <h3 className="text-xl font-bold">
+                        {highlight(item.name[lang] || item.name.en, query)}
+                      </h3>
+                      <p className="text-primary-600 dark:text-primary-400">
+                        {highlight(item.role[lang] || item.role.en, query)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-        </div>
-      )}
+            )}
+
+            {/* Pages */}
+            {results.pages.length > 0 && (
+              <div>
+                <h2 className="subtitle text-gray-900 dark:text-gray-100">
+                  Pages ({results.pages.length})
+                </h2>
+                <div className="space-y-4">
+                  {results.pages.map(item => (
+                    <Link
+                      key={item.id}
+                      to={item.path || `/pages/${item.slug}`}
+                      className="card hover:shadow-lg transition-shadow block"
+                    >
+                      <h3 className="text-xl font-bold mb-2">
+                        {highlight(item.title[lang] || item.title.en, query)}
+                      </h3>
+                      <p className="text-gray-700 dark:text-gray-300 line-clamp-2">
+                        {highlight(item.content[lang] || item.content.en, query)}
+                      </p>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

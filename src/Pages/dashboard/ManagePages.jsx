@@ -117,95 +117,97 @@ export default function ManagePages() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Link to="/dashboard" className="text-primary-600 dark:text-primary-400">
-            <ArrowLeft className="w-6 h-6" />
-          </Link>
-          <h1 className="title mb-0">{t("Manage Pages")}</h1>
-        </div>
-        <button onClick={() => { resetForm(); setShowModal(true); }} className="primary-btn flex items-center space-x-2">
-          <Plus className="w-5 h-5" />
-          <span>{t("Add Page")}</span>
-        </button>
-      </div>
-
-      {/* Message */}
-      {message && (
-        <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg p-4">
-          <p className="text-primary-600 dark:text-primary-400">{message}</p>
-        </div>
-      )}
-
-      {/* Pages Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {pages.map((page) => (
-          <div key={page.id} className="card">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{page.title.en}</h3>
-            <p className="text-sm text-primary-600 dark:text-primary-400 mb-3">/{page.slug}</p>
-            <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-3 mb-4">{page.content.en}</p>
-            <div className="flex space-x-2">
-              <button onClick={() => startEditing(page)} className="secondary-btn flex items-center space-x-1 flex-1">
-                <Edit className="w-4 h-4" /><span>{t("edit")}</span>
-              </button>
-              <button onClick={() => handleDelete(page.id)} className="danger-btn flex items-center space-x-1">
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 py-12">
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Link to="/dashboard" className="text-primary-600 dark:text-primary-400">
+              <ArrowLeft className="w-6 h-6" />
+            </Link>
+            <h1 className="title mb-0">{t("Manage Pages")}</h1>
           </div>
-        ))}
-      </div>
+          <button onClick={() => { resetForm(); setShowModal(true); }} className="primary-btn flex items-center space-x-2">
+            <Plus className="w-5 h-5" />
+            <span>{t("Add Page")}</span>
+          </button>
+        </div>
 
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{editingId ? t("editPage") : t("addPage")}</h2>
-              <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700"><X className="w-6 h-6" /></button>
-            </div>
+        {/* Message */}
+        {message && (
+          <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg p-4">
+            <p className="text-primary-600 dark:text-primary-400">{message}</p>
+          </div>
+        )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t("Slug")} *</label>
-                <input type="text" value={formData.slug} onChange={(e) => setFormData({ ...formData, slug: e.target.value })} className="input-field" placeholder="about-us" required />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t("URL Will Be")}: /pages/{formData.slug}</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t("Title")} *</label>
-                <input type="text" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className="input-field" required />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t("Content")} *</label>
-                <textarea value={formData.content} onChange={(e) => setFormData({ ...formData, content: e.target.value })} rows="10" className="input-field" required />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t("Meta Description")}</label>
-                <textarea value={formData.meta_description} onChange={(e) => setFormData({ ...formData, meta_description: e.target.value })} rows="2" className="input-field" placeholder={t("SEO Description")} />
-              </div>
-
-              <div className="flex space-x-3 pt-4">
-                <button type="button" onClick={() => setShowModal(false)} className="secondary-btn">{t("Cancel")}</button>
-                <button type="submit" className="primary-btn flex-1" disabled={submitting}>
-                  {submitting ? (
-                    <div className="flex items-center space-x-2 justify-center">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      <span>{editingId ? t("Updating") : t("Saving")}...</span>
-                    </div>
-                  ) : (
-                    editingId ? t("Update") : t("Create")
-                  )}
+        {/* Pages Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {pages.map((page) => (
+            <div key={page.id} className="card">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{page.title.en}</h3>
+              <p className="text-sm text-primary-600 dark:text-primary-400 mb-3">/{page.slug}</p>
+              <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-3 mb-4">{page.content.en}</p>
+              <div className="flex space-x-2">
+                <button onClick={() => startEditing(page)} className="secondary-btn flex items-center space-x-1 flex-1">
+                  <Edit className="w-4 h-4" /><span>{t("edit")}</span>
+                </button>
+                <button onClick={() => handleDelete(page.id)} className="danger-btn flex items-center space-x-1">
+                  <Trash2 className="w-4 h-4" />
                 </button>
               </div>
-            </form>
-          </div>
+            </div>
+          ))}
         </div>
-      )}
+
+        {/* Modal */}
+        {showModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{editingId ? t("Edit Page") : t("Add Page")}</h2>
+                <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700"><X className="w-6 h-6" /></button>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t("Slug")} *</label>
+                  <input type="text" value={formData.slug} onChange={(e) => setFormData({ ...formData, slug: e.target.value })} className="input-field" placeholder="about-us" required />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t("URL Will Be")}: /pages/{formData.slug}</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t("Title")} *</label>
+                  <input type="text" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className="input-field" required />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t("Content")} *</label>
+                  <textarea value={formData.content} onChange={(e) => setFormData({ ...formData, content: e.target.value })} rows="10" className="input-field" required />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t("Meta Description")}</label>
+                  <textarea value={formData.meta_description} onChange={(e) => setFormData({ ...formData, meta_description: e.target.value })} rows="2" className="input-field" placeholder={t("SEO Description")} />
+                </div>
+
+                <div className="flex space-x-3 pt-4">
+                  <button type="button" onClick={() => setShowModal(false)} className="secondary-btn">{t("Cancel")}</button>
+                  <button type="submit" className="primary-btn flex-1" disabled={submitting}>
+                    {submitting ? (
+                      <div className="flex items-center space-x-2 justify-center">
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                        <span>{editingId ? t("Updating") : t("Saving")}...</span>
+                      </div>
+                    ) : (
+                      editingId ? t("Update") : t("Create")
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
