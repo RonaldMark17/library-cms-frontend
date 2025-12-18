@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Mail, Phone, User } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -162,6 +163,17 @@ export default function Staff() {
                       </a>
                     </div>
                   )}
+                </div>
+
+                {/* ===== View More Button ===== */}
+                <div className="mt-4">
+                  <Link
+                    to={`/staff/${user.id}`}
+                    className="inline-block bg-primary-600 hover:bg-primary-700 text-white text-sm px-4 py-2 rounded transition-colors"
+                  >
+                    {t("View More")}
+                  </Link>
+
                 </div>
               </div>
             );

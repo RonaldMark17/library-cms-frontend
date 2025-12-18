@@ -11,6 +11,7 @@ import Layout from "./Pages/Layout";
 import Home from "./Pages/Home";
 import About from "./Pages/About";
 import Staff from "./Pages/Staff";
+import StaffDetails from "./Pages/StaffDetails"; // <-- Staff Details
 import Announcements from "./Pages/Announcements";
 import AnnouncementDetail from "../AnnouncementDetail";
 import Resources from "./Pages/Resources";
@@ -43,10 +44,15 @@ import ManageUsers from "./Pages/dashboard/ManageUsers";
 // 404 Page
 function NotFound() {
   return (
-    <div className="text-center py-16">
+    <div className="text-center py-16 dark:bg-gray-900 dark:text-white">
       <h1 className="text-6xl font-bold mb-4">404</h1>
       <p className="text-gray-600 dark:text-gray-300 mb-6">Page not found</p>
-      <a href="/" className="primary-btn">Go Home</a>
+      <a
+        href="/"
+        className="px-6 py-2 bg-primary-600 text-white rounded hover:bg-primary-500 transition"
+      >
+        Go Home
+      </a>
     </div>
   );
 }
@@ -57,7 +63,7 @@ function ProtectedRoute({ children, requireAuth = true, requireAdmin = false }) 
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
+      <div className="flex justify-center items-center min-h-screen dark:bg-gray-900">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
       </div>
     );
@@ -82,6 +88,7 @@ export default function App() {
           <Route index element={<Home />} />
           <Route path="about" element={<About />} />
           <Route path="staff" element={<Staff />} />
+          <Route path="staff/:id" element={<StaffDetails />} /> {/* Staff Details */}
           <Route path="announcements" element={<Announcements />} />
           <Route path="announcements/:id" element={<AnnouncementDetail />} />
           <Route path="resources" element={<Resources />} />
@@ -92,7 +99,7 @@ export default function App() {
           <Route path="subscription-status" element={<SubscriptionStatus />} />
           <Route path="unsubscribe" element={<Unsubscribe />} />
 
-          {/* Auth (Only when NOT logged in) */}
+          {/* Auth */}
           <Route
             path="login"
             element={
@@ -118,7 +125,7 @@ export default function App() {
             }
           />
 
-          {/* Authenticated routes */}
+          {/* Authenticated */}
           <Route
             path="settings"
             element={
@@ -128,7 +135,7 @@ export default function App() {
             }
           />
 
-          {/* Dashboard (Admin + Librarian) */}
+          {/* Dashboard */}
           <Route
             path="dashboard"
             element={

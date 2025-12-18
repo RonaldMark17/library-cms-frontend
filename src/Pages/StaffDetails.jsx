@@ -1,14 +1,14 @@
-// src/Pages/Staff/StaffDetails.jsx
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
-import { Mail, Phone, User, ArrowLeft } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { ArrowLeft, Mail, Phone, User } from "lucide-react";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL; // no trailing slash
 
 export default function StaffDetails() {
-  const { t, i18n } = useTranslation();
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,17 +26,28 @@ export default function StaffDetails() {
     setError("");
 
     try {
-      const res = await fetch(`${API_URL}/users/${id}`);
+      const url = `${API_URL}/users/${id}`;
+      console.log("Fetching staff details from:", url);
+
+      const res = await fetch(url); // public GET, no auth needed
+      console.log("Response status:", res.status);
+
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
         throw new Error(errData.message || "Failed to fetch staff details");
       }
 
       const data = await res.json();
+
+      // Ensure disabled staff are not shown publicly
+      if (data.disabled) {
+        throw new Error("Staff not available");
+      }
+
       setUser(data);
     } catch (err) {
       console.error("Error fetching staff details:", err);
-      setError(t("Error Fetching Staff Details"));
+      setError(t("Staff Not Found"));
     } finally {
       setLoading(false);
     }
@@ -52,14 +63,8 @@ export default function StaffDetails() {
 
   if (error) {
     return (
-      <div className="text-center text-red-600 dark:text-red-400 py-10">{error}</div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="text-center text-gray-600 dark:text-gray-400 py-10">
-        {t("Staff Not Found")}
+      <div className="text-center text-red-600 dark:text-red-400 py-10">
+        {error}
       </div>
     );
   }
@@ -77,43 +82,48 @@ export default function StaffDetails() {
   const bio = user.bio?.[currentLang] || user.bio?.en || "";
 
   return (
-    <div className="max-w-3xl mx-auto py-10 px-4 space-y-6">
-      <Link
-        to="/staff"
-        className="flex items-center text-primary-600 hover:text-primary-700 mb-4"
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
+      <button
+        onClick={() => navigate(-1)}
+        className="flex items-center text-primary-600 hover:text-primary-700"
       >
-        <ArrowLeft className="w-4 h-4 mr-2" />
-        {t("Back to Staff")}
-      </Link>
+        <ArrowLeft className="w-5 h-5 mr-2" />
+        {t("Back")}
+      </button>
 
       <div className="text-center space-y-4">
+        {/* Avatar */}
         {user.image_path ? (
           <img
             src={`${API_URL.replace("/api", "")}/storage/${user.image_path}`}
             alt={name}
-            className="w-40 h-40 rounded-full mx-auto object-cover"
+            className="w-48 h-48 rounded-full mx-auto object-cover"
           />
         ) : (
-          <div className="w-40 h-40 rounded-full mx-auto bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
+          <div className="w-48 h-48 rounded-full mx-auto bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
             <User className="w-20 h-20 text-primary-600 dark:text-primary-400" />
           </div>
         )}
 
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{name}</h1>
+        {/* Name */}
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          {name}
+        </h1>
 
+        {/* Role */}
         {role && (
           <span className="inline-block bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 text-sm px-3 py-1 rounded-full">
             {role.charAt(0).toUpperCase() + role.slice(1)}
           </span>
         )}
 
-        {bio && (
-          <p className="text-gray-600 dark:text-gray-400 mt-4">{bio}</p>
-        )}
+        {/* Bio */}
+        {bio && <p className="text-gray-600 dark:text-gray-400 mt-4">{bio}</p>}
 
-        <div className="mt-4 space-y-2 text-sm text-gray-600 dark:text-gray-400">
+        {/* Contact */}
+        <div className="mt-6 space-y-2 text-sm text-center">
           {user.email && (
-            <div className="flex items-center justify-center">
+            <div className="flex items-center justify-center text-gray-600 dark:text-gray-400">
               <Mail className="w-4 h-4 mr-2" />
               <a
                 href={`mailto:${user.email}`}
@@ -123,9 +133,8 @@ export default function StaffDetails() {
               </a>
             </div>
           )}
-
           {user.phone && (
-            <div className="flex items-center justify-center">
+            <div className="flex items-center justify-center text-gray-600 dark:text-gray-400">
               <Phone className="w-4 h-4 mr-2" />
               <a
                 href={`tel:${user.phone}`}

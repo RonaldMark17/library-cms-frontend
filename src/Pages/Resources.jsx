@@ -26,6 +26,7 @@ export default function Resources() {
   if (loading) return <div className="flex justify-center items-center min-h-[400px]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div></div>;
 
   return (
+    
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 py-12">
       <div className="space-y-8">
         <div className="text-center">

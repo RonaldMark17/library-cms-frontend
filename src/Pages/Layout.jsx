@@ -184,16 +184,27 @@ export default function Layout() {
   useEffect(() => {
     async function fetchMenu() {
       try {
-        const res = await fetch(`${API_URL}/menu-items`, { headers: { Authorization: `Bearer ${token}` } });
+        const res = await fetch(`${API_URL}/menu-items`, {
+          headers: token
+            ? { Authorization: `Bearer ${token}` }
+            : undefined,
+        });
+
         if (!res.ok) throw new Error("Failed to fetch menu");
+
         const data = await res.json();
         setMenuItems(data.filter(item => !item.hidden));
       } catch (err) {
         console.error(err);
-      } finally { setMenuLoading(false); }
+        setMenuItems([]);
+      } finally {
+        setMenuLoading(false);
+      }
     }
-    if (token) fetchMenu();
+
+    fetchMenu();
   }, [token]);
+
 
   async function handleLogout(e) {
     e.preventDefault();
@@ -293,7 +304,8 @@ export default function Layout() {
               <ThemeToggle />
               <LanguageSwitcher />
               {!user ? (
-                <NavLink to="/login" className="primary-btn">{t("login")}</NavLink>
+                // <NavLink to="/login" className="primary-btn">{t("login")}</NavLink>
+                <></>
               ) : (
                 <UserDropdown user={user} t={t} handleLogout={handleLogout} />
               )}
@@ -319,7 +331,8 @@ export default function Layout() {
                   <LanguageSwitcher />
                 </div>
                 {!user ? (
-                  <NavLink to="/login" className="primary-btn text-center" onClick={() => setMobileMenuOpen(false)}>{t("login")}</NavLink>
+                  //<NavLink to="/login" className="primary-btn text-center" onClick={() => setMobileMenuOpen(false)}>{t("login")}</NavLink>
+                  <></>
                 ) : (
                   <form onSubmit={handleLogout} className="pt-3">
                     <button className="danger-btn w-full">{t("logout")}</button>

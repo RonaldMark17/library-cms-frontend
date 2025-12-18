@@ -122,7 +122,7 @@ export default function Announcements() {
               className="border rounded px-2 py-1 flex items-center gap-1 dark:bg-gray-700 dark:text-white"
             >
               {sortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              {sortDirection === 'asc' ? t('ascending') : t('descending')}
+              {sortDirection === 'asc' ? t('Ascending') : t('Descending')}
             </button>
           </div>
 
