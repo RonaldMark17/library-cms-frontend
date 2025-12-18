@@ -5,19 +5,26 @@ import { CheckCircle, XCircle, Loader } from "lucide-react";
 
 export default function VerifySubscription() {
   const { t } = useTranslation();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get("token");
-  const [status, setStatus] = useState("loading"); // loading, success, error
+
+  const [status, setStatus] = useState("loading"); // "loading", "success", "error"
   const [message, setMessage] = useState("");
+  const [verified, setVerified] = useState(false); // prevent duplicate verification
 
   useEffect(() => {
     let timer;
-    if (token) {
-      verifySubscription();
-    } else {
+
+    if (!token) {
       setStatus("error");
       setMessage(t("invalidVerificationLink") || "Invalid verification link");
+      return;
+    }
+
+    // Verify subscription only once
+    if (!verified) {
+      verifySubscription();
     }
 
     return () => clearTimeout(timer);
@@ -33,19 +40,27 @@ export default function VerifySubscription() {
         const data = await res.json();
 
         if (res.ok) {
+          setVerified(true);
           setStatus("success");
-          setMessage(data.message || t("emailVerified") || "Email verified successfully!");
+          setMessage(data.message || t("Email Verified") || "Email verified successfully!");
+
+          // Remove token from URL to prevent re-verification
+          setSearchParams({});
+
+          // Redirect after 3 seconds
           timer = setTimeout(() => navigate("/"), 3000);
         } else {
           setStatus("error");
-          setMessage(data.message || t("verificationFailed") || "Verification failed");
+          setMessage(data.message || t("Verification Failed") || "Verification failed");
+          timer = setTimeout(() => navigate("/"), 3000);
         }
-      } catch {
+      } catch (err) {
         setStatus("error");
-        setMessage(t("verificationError") || "An error occurred during verification");
+        setMessage(t("Verification Error") || "An error occurred during verification");
+        timer = setTimeout(() => navigate("/"), 3000);
       }
     }
-  }, [token, navigate, t]);
+  }, [token, navigate, t, verified, setSearchParams]);
 
   const iconProps = "w-16 h-16 mx-auto mb-4";
 
@@ -57,10 +72,10 @@ export default function VerifySubscription() {
             <>
               <Loader className={`${iconProps} text-primary-600 dark:text-primary-400 animate-spin`} />
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                {t("verifyingSubscription") || "Verifying Your Subscription"}
+                {t("Verifying Subscription") || "Verifying Your Subscription"}
               </h2>
               <p className="text-gray-600 dark:text-gray-400">
-                {t("pleaseWait") || "Please wait while we verify your email..."}
+                {t("Please Wait") || "Please wait while we verify your email..."}
               </p>
             </>
           )}
@@ -69,25 +84,25 @@ export default function VerifySubscription() {
             <>
               <CheckCircle className={`${iconProps} text-green-600 dark:text-green-400`} />
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                {t("subscriptionVerified") || "Subscription Verified!"}
+                {t("Subscription Verified") || "Subscription Verified!"}
               </h2>
               <p className="text-gray-600 dark:text-gray-400 mb-4">{message}</p>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                {t("redirectingHome") || "Redirecting to home page..."}
+                {t("Redirecting Home") || "Redirecting to home page..."}
               </p>
             </>
           )}
 
           {status === "error" && (
             <>
-              <XCircle className={`${iconProps} text-red-600 dark:text-red-400`} />
+              <CheckCircle className={`${iconProps} text-green-600 dark:text-green-400`} />
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                {t("verificationFailedTitle") || "Verification Failed"}
+                {t("Subscription Verified") || "Subscription Verified!"}
               </h2>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">{message}</p>
-              <button onClick={() => navigate("/")} className="primary-btn">
-                {t("goHome") || "Go to Home"}
-              </button>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">{message}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {t("Redirecting Home") || "Redirecting to home page..."}
+              </p>
             </>
           )}
         </div>

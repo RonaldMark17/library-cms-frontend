@@ -3,20 +3,25 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { CheckCircle, XCircle, Loader } from "lucide-react";
 
 export default function Unsubscribe() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get("token");
 
-  const [status, setStatus] = useState("loading");
+  const [status, setStatus] = useState("loading"); // "loading", "success", "error", "info"
   const [message, setMessage] = useState("");
+  const [completed, setCompleted] = useState(false); // prevent duplicate requests
 
   useEffect(() => {
     let timer;
-    if (token) {
-      unsubscribe();
-    } else {
+
+    if (!token) {
       setStatus("error");
       setMessage("Invalid unsubscribe link");
+      return;
+    }
+
+    if (!completed) {
+      unsubscribe();
     }
 
     return () => clearTimeout(timer);
@@ -31,18 +36,23 @@ export default function Unsubscribe() {
 
         const data = await res.json();
 
+        setCompleted(true);
         setStatus(data.status || "error");
         setMessage(data.message || "Something went wrong");
+
+        // Remove token from URL so page refresh won't resend request
+        setSearchParams({});
 
         if (data.status === "success" || data.status === "info") {
           timer = setTimeout(() => navigate("/"), 3000);
         }
       } catch {
+        setCompleted(true);
         setStatus("error");
         setMessage("An error occurred while unsubscribing");
       }
     }
-  }, [token, navigate]);
+  }, [token, navigate, completed, setSearchParams]);
 
   const iconProps = "w-16 h-16 mx-auto mb-4";
 
@@ -68,24 +78,19 @@ export default function Unsubscribe() {
             </>
           )}
 
-          {status === "error" && (
-            <>
-              <XCircle className={`${iconProps} text-red-600`} />
-              <h2 className="text-2xl font-bold mb-2 dark:text-white">Error</h2>
-              <p className="dark:text-gray-300">{message}</p>
-              <button
-                onClick={() => navigate("/")}
-                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
-              >
-                Go to Home
-              </button>
-            </>
-          )}
-
           {status === "info" && (
             <>
               <CheckCircle className={`${iconProps} text-blue-600`} />
               <h2 className="text-2xl font-bold mb-2 dark:text-white">Notice</h2>
+              <p className="dark:text-gray-300">{message}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Redirecting to homepage...</p>
+            </>
+          )}
+
+          {status === "error" && (
+            <>
+              <CheckCircle className={`${iconProps} text-green-600`} />
+              <h2 className="text-2xl font-bold mb-2 dark:text-white">Unsubscribed!</h2>
               <p className="dark:text-gray-300">{message}</p>
               <p className="text-sm text-gray-500 dark:text-gray-400">Redirecting to homepage...</p>
             </>

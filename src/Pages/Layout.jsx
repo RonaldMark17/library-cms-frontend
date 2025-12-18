@@ -183,6 +183,12 @@ export default function Layout() {
   const [menuLoading, setMenuLoading] = useState(true);
   const [openItems, setOpenItems] = useState({});
 
+  // Subscribe state
+  const [subscribeEmail, setSubscribeEmail] = useState("");
+  const [subscribeLoading, setSubscribeLoading] = useState(false);
+  const [subscribeSuccess, setSubscribeSuccess] = useState(false);
+  const [subscribeError, setSubscribeError] = useState("");
+
   const toggleItem = (id) => setOpenItems((prev) => ({ ...prev, [id]: !prev[id] }));
 
   useEffect(() => {
@@ -233,84 +239,77 @@ export default function Layout() {
   };
 
   // Recursive Menu Renderer
-  // Recursive Menu Renderer
-const renderMenu = (items, parentId = null, isMobile = false) =>
-  items
-    .filter((item) => item.parent_id === parentId && item.is_active)
-    .map((item) => {
-      const children = items.filter((child) => child.parent_id === item.id && child.is_active);
-      const label = item.label[i18n.language] || item.label.en;
+  const renderMenu = (items, parentId = null, isMobile = false) =>
+    items
+      .filter((item) => item.parent_id === parentId && item.is_active)
+      .map((item) => {
+        const children = items.filter((child) => child.parent_id === item.id && child.is_active);
+        const label = item.label[i18n.language] || item.label.en;
 
-      if (children.length > 0) {
-        if (isMobile) {
-          // Mobile: toggle submenus
+        if (children.length > 0) {
+          if (isMobile) {
+            return (
+              <div key={item.id} className="flex flex-col">
+                <button
+                  className="flex justify-between items-center px-3 py-2 w-full text-left text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition"
+                  onClick={() => toggleItem(item.id)}
+                >
+                  {label}
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform ${openItems[item.id] ? "rotate-180" : ""}`}
+                  />
+                </button>
+                {openItems[item.id] && (
+                  <div className="pl-4 flex flex-col space-y-1 dark:text-white">
+                    {renderMenu(items, item.id, isMobile)}
+                  </div>
+                )}
+              </div>
+            );
+          }
+
           return (
-            <div key={item.id} className="flex flex-col">
-              <button
-                className="flex justify-between items-center px-3 py-2 w-full text-left text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition"
-                onClick={() => toggleItem(item.id)}
+            <div key={item.id} className="relative group">
+              <NavLink
+                to={item.url || "#"}
+                className="px-3 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition flex items-center space-x-1 text-gray-700 dark:text-gray-200"
               >
-                {label}
-                <ChevronDown
-                  className={`w-4 h-4 transition-transform ${openItems[item.id] ? "rotate-180" : ""}`}
-                />
-              </button>
-              {openItems[item.id] && (
-                <div className="pl-4 flex flex-col space-y-1 dark:text-white">
-                  {renderMenu(items, item.id, isMobile)}
-                </div>
-              )}
+                <span>{label}</span>
+                <ChevronDown className="w-3 h-3" />
+              </NavLink>
+
+              <div className="absolute left-0 top-full hidden group-hover:block bg-white dark:bg-gray-800 shadow-lg rounded mt-1 min-w-[200px] z-50 border border-gray-200 dark:border-gray-700">
+                {children.map((child) => {
+                  const childLabel = child.label[i18n.language] || child.label.en;
+                  return (
+                    <NavLink
+                      key={child.id}
+                      to={child.url || "#"}
+                      className="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                    >
+                      {childLabel}
+                    </NavLink>
+                  );
+                })}
+              </div>
             </div>
           );
         }
 
-        // Desktop: hover dropdown
         return (
-          <div key={item.id} className="relative group">
-            <NavLink
-              to={item.url || "#"}
-              className="px-3 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition flex items-center space-x-1 text-gray-700 dark:text-gray-200"
-            >
-              <span>{label}</span>
-              <ChevronDown className="w-3 h-3" />
-            </NavLink>
-
-            <div className="absolute left-0 top-full hidden group-hover:block bg-white dark:bg-gray-800 shadow-lg rounded mt-1 min-w-[200px] z-50 border border-gray-200 dark:border-gray-700">
-              {children.map((child) => {
-                const childLabel = child.label[i18n.language] || child.label.en;
-                return (
-                  <NavLink
-                    key={child.id}
-                    to={child.url || "#"}
-                    className="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-                  >
-                    {childLabel}
-                  </NavLink>
-                );
-              })}
-            </div>
-          </div>
+          <NavLink
+            key={item.id}
+            to={item.url || "#"}
+            className={({ isActive }) =>
+              `px-3 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition ${
+                isActive ? "bg-primary-500 text-white" : "text-gray-700 dark:text-gray-200"
+              }`
+            }
+          >
+            {label}
+          </NavLink>
         );
-      }
-
-      // No children: regular link
-      return (
-        <NavLink
-          key={item.id}
-          to={item.url || "#"}
-          className={({ isActive }) =>
-            `px-3 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition ${
-              isActive ? "bg-primary-500 text-white" : "text-gray-700 dark:text-gray-200"
-            }`
-          }
-        >
-          {label}
-        </NavLink>
-      );
-    });
-
-
-        
+      });
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
@@ -323,7 +322,6 @@ const renderMenu = (items, parentId = null, isMobile = false) =>
               <span className="text-xl font-bold text-gray-900 dark:text-white">{siteName}</span>
             </NavLink>
 
-            {/* Desktop Menu */}
             <div className="hidden md:flex items-center space-x-4">
               {menuLoading ? <LoadingSpinner /> : renderMenu(menuItems)}
               <div className="ml-4">
@@ -331,14 +329,12 @@ const renderMenu = (items, parentId = null, isMobile = false) =>
               </div>
             </div>
 
-            {/* User & Toggles */}
             <div className="hidden md:flex items-center space-x-3 dark:text-white">
               <ThemeToggle />
               <LanguageSwitcher />
               {user && <UserDropdown user={user} t={t} handleLogout={handleLogout} />}
             </div>
 
-            {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="md:hidden p-2 rounded-md text-gray-700 dark:text-gray-200"
@@ -347,7 +343,6 @@ const renderMenu = (items, parentId = null, isMobile = false) =>
             </button>
           </div>
 
-          {/* Mobile Menu */}
           {mobileMenuOpen && (
             <div className="md:hidden py-4 border-t border-gray-200 dark:border-gray-700">
               <div className="flex flex-col space-y-3">
@@ -381,10 +376,71 @@ const renderMenu = (items, parentId = null, isMobile = false) =>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{siteName}</h3>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">
+              <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
                 Empowering minds and enriching lives through knowledge, innovation, and community engagement.
               </p>
+
+              {/* Subscribe to Announcements */}
+              <div className="mt-2">
+                <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Subscribe to Announcements</h4>
+                <p className="text-gray-600 dark:text-gray-400 text-xs mb-2">
+                  Get notified when we publish new announcements
+                </p>
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    setSubscribeLoading(true);
+                    setSubscribeError("");
+                    try {
+                      const res = await fetch(`${API_URL}/subscribe`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email: subscribeEmail }),
+                      });
+                      const data = await res.json();
+                      if (res.ok) {
+                        setSubscribeSuccess(true);
+                        setSubscribeEmail("");
+                      } else {
+                        setSubscribeError(data.message || "An error occurred");
+                      }
+                    } catch (err) {
+                      setSubscribeError("An error occurred. Please try again.");
+                    } finally {
+                      setSubscribeLoading(false);
+                    }
+                  }}
+                  className="flex flex-col space-y-2"
+                >
+                  {subscribeSuccess && (
+                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-2 text-green-700 dark:text-green-300 text-sm">
+                      Thank you! Please check your email to verify your subscription.
+                    </div>
+                  )}
+                  <div className="flex space-x-2">
+                    <input
+                      type="email"
+                      placeholder="Your email"
+                      value={subscribeEmail}
+                      onChange={(e) => setSubscribeEmail(e.target.value)}
+                      required
+                      className="w-full px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-1 focus:ring-primary-500 focus:outline-none"
+                    />
+                    <button
+                      type="submit"
+                      disabled={subscribeLoading}
+                      className="px-3 py-1 bg-primary-500 text-white rounded hover:bg-primary-600 transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {subscribeLoading ? "Loading..." : "Subscribe"}
+                    </button>
+                  </div>
+                  {subscribeError && (
+                    <p className="text-red-600 dark:text-red-400 text-sm">{subscribeError}</p>
+                  )}
+                </form>
+              </div>
             </div>
+
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Links</h3>
               <div className="flex flex-col space-y-2">
@@ -396,6 +452,7 @@ const renderMenu = (items, parentId = null, isMobile = false) =>
                     })}
               </div>
             </div>
+
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Contact</h3>
               <p className="text-gray-600 dark:text-gray-400 text-sm">
@@ -405,6 +462,7 @@ const renderMenu = (items, parentId = null, isMobile = false) =>
                 Hours: Mon-Fri 8:00am - 6:00pm
               </p>
             </div>
+
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Follow Us</h3>
               <div className="flex space-x-4 text-gray-600 dark:text-gray-400">
