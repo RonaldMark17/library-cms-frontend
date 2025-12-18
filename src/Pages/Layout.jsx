@@ -332,7 +332,7 @@ const renderMenu = (items, parentId = null, isMobile = false) =>
             </div>
 
             {/* User & Toggles */}
-            <div className="hidden md:flex items-center space-x-3">
+            <div className="hidden md:flex items-center space-x-3 dark:text-white">
               <ThemeToggle />
               <LanguageSwitcher />
               {user && <UserDropdown user={user} t={t} handleLogout={handleLogout} />}
