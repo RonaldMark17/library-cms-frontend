@@ -241,7 +241,7 @@ export default function ManageMenu() {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl shadow-lg transition-colors">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{editingId ? t("editMenuItem") : t("Add Menu Item")}</h2>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{editingId ? t("Edit Menu Item") : t("Add Menu Item")}</h2>
                 <button onClick={() => { setShowModal(false); resetForm(); }} className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white">
                   <X className="w-6 h-6" />
                 </button>
@@ -269,8 +269,6 @@ export default function ManageMenu() {
                   />
                 </div>
 
-                
-
                 <div>
                   <label className="block text-gray-700 dark:text-gray-200">{t("Parent Menu")}</label>
                   <select
@@ -279,11 +277,13 @@ export default function ManageMenu() {
                     className="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   >
                     <option value="">{t("None")}</option>
-                    {menuItems.map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.label?.en || ""}
-                      </option>
-                    ))}
+                    {menuItems
+                      .filter((item) => item.id !== editingId) // <-- exclude self
+                      .map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.label?.en || ""}
+                        </option>
+                      ))}
                   </select>
                 </div>
 
