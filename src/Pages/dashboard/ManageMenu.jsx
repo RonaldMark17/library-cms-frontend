@@ -14,7 +14,7 @@ export default function ManageMenu() {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
   const [formData, setFormData] = useState({
-    label: { en: "" }, // Only English input
+    label: { en: "" },
     url: "",
     type: "page",
     icon: "",
@@ -31,7 +31,7 @@ export default function ManageMenu() {
   const startEditing = (item) => {
     setEditingId(item.id);
     setFormData({
-      label: { en: item.label?.en || "" }, // only English
+      label: { en: item.label?.en || "" },
       url: item.url || "",
       type: item.type || "page",
       icon: item.icon || "",
@@ -40,7 +40,6 @@ export default function ManageMenu() {
     setShowModal(true);
   };
 
-  // Auto-translate English to Tagalog
   async function translateToTagalog(text) {
     try {
       const res = await fetch(`${API_URL}/translate`, {
@@ -63,13 +62,27 @@ export default function ManageMenu() {
     setMessage("");
 
     try {
-      // Auto-translate English label
-      const tlLabel = await translateToTagalog(formData.label.en);
-      const payload = { ...formData, label: { en: formData.label.en, tl: tlLabel } };
+      if (formData.type === "link" && !formData.url.trim()) {
+        setMessage(t("URL is required for link type"));
+        setSubmitting(false);
+        return;
+      }
 
-      // Check if item exists (by URL or label)
+      let urlValue = formData.url;
+      if (formData.type === "link" && !/^https?:\/\//i.test(urlValue)) {
+        urlValue = `http://${urlValue}`;
+      }
+
+      const tlLabel = await translateToTagalog(formData.label.en);
+      const payload = {
+        ...formData,
+        url: urlValue,
+        label: { en: formData.label.en, tl: tlLabel },
+        parent_id: formData.parent_id ? Number(formData.parent_id) : null,
+      };
+
       const existingItem = menuItems.find(
-        (item) => item.url === formData.url || item.label?.en === formData.label.en
+        (item) => item.url === payload.url || item.label?.en === payload.label.en
       );
 
       let url, method;
@@ -77,7 +90,6 @@ export default function ManageMenu() {
         url = `${API_URL}/menu-items/${editingId}`;
         method = "PUT";
       } else if (existingItem) {
-        // Update the existing item instead of creating a new one
         url = `${API_URL}/menu-items/${existingItem.id}`;
         method = "PUT";
       } else {
@@ -103,7 +115,8 @@ export default function ManageMenu() {
         setShowModal(false);
         resetForm();
       } else {
-        setMessage(t("Error Saving Menu"));
+        const errData = await res.json();
+        setMessage(errData.message || t("Error Saving Menu"));
       }
     } catch (error) {
       console.error(error);
@@ -112,7 +125,6 @@ export default function ManageMenu() {
       setSubmitting(false);
     }
   }
-
 
   async function handleToggleActive(id) {
     try {
@@ -198,7 +210,6 @@ export default function ManageMenu() {
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-900 dark:text-white">
                     {item.label?.en || ""}
-                    {/*<span className="text-sm text-gray-500 dark:text-gray-400">({item.label?.tl || ""})</span> */}
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">{item.type} • {item.url || t("noURL")}</p>
                 </div>
@@ -258,23 +269,13 @@ export default function ManageMenu() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-gray-700 dark:text-gray-200">{t("Type")}</label>
-                  <select
-                    value={formData.type}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                    className="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  >
-                    <option value="page">{t("Page")}</option>
-                    <option value="link">{t("Link")}</option>
-                  </select>
-                </div>
+                
 
                 <div>
                   <label className="block text-gray-700 dark:text-gray-200">{t("Parent Menu")}</label>
                   <select
                     value={formData.parent_id || ""}
-                    onChange={(e) => setFormData({ ...formData, parent_id: e.target.value || null })}
+                    onChange={(e) => setFormData({ ...formData, parent_id: e.target.value ? Number(e.target.value) : null })}
                     className="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   >
                     <option value="">{t("None")}</option>
