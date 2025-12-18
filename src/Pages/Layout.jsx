@@ -1,15 +1,25 @@
+// Layout.jsx
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useContext, useState, useEffect, useRef } from "react";
 import { AppContext } from "../Context/AppContext";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "../Components/LanguageSwitcher";
 import ThemeToggle from "../Components/ThemeToggle";
-import { Menu, X, Search as SearchIcon } from "lucide-react";
-import * as Icons from "lucide-react";
+import {
+  Menu,
+  X,
+  Search as SearchIcon,
+  ChevronDown,
+  Facebook,
+  Twitter,
+  Instagram,
+  Linkedin,
+} from "lucide-react";
 import LoadingSpinner from "../Components/LoadingSpinner";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+// Search Bar Component
 function SearchBarIcon({ onSearch, isMobile }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -31,36 +41,32 @@ function SearchBarIcon({ onSearch, isMobile }) {
     setOpen(false);
   };
 
-  if (isMobile) {
-    return (
-      <form onSubmit={handleSubmit} className="w-full">
-        <div className="relative">
-          <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-300 w-5 h-5" />
-          <input
-            type="text"
-            value={query}
-            onChange={handleChange}
-            placeholder="Search..."
-            autoFocus
-            className="w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-full
-                       focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white
-                       text-sm transition-all duration-150"
-          />
-          {query && (
-            <button
-              type="button"
-              onClick={handleClear}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          )}
-        </div>
-      </form>
-    );
-  }
-
-  return (
+  return isMobile ? (
+    <form onSubmit={handleSubmit} className="w-full">
+      <div className="relative">
+        <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-300 w-5 h-5" />
+        <input
+          type="text"
+          value={query}
+          onChange={handleChange}
+          placeholder="Search..."
+          autoFocus
+          className="w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-full
+                     focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white
+                     text-sm transition-all duration-150"
+        />
+        {query && (
+          <button
+            type="button"
+            onClick={handleClear}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
+      </div>
+    </form>
+  ) : (
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
@@ -68,11 +74,10 @@ function SearchBarIcon({ onSearch, isMobile }) {
       >
         <SearchIcon className="w-5 h-5 text-gray-700 dark:text-gray-200" />
       </button>
-
       {open && (
         <form
           onSubmit={handleSubmit}
-          className="absolute right-0 top-full mt-2 w-48 md:w-64 lg:w-72"
+          className="absolute right-0 top-full mt-2 w-48 md:w-64 lg:w-72 bg-white dark:bg-gray-800 shadow-lg rounded z-50 p-2"
         >
           <div className="relative">
             <input
@@ -101,6 +106,7 @@ function SearchBarIcon({ onSearch, isMobile }) {
   );
 }
 
+// User Dropdown Component
 function UserDropdown({ user, t, handleLogout }) {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef();
@@ -124,9 +130,7 @@ function UserDropdown({ user, t, handleLogout }) {
         className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition"
       >
         <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{user.name}</span>
-        <Icons.ChevronDown
-          className={`w-4 h-4 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-        />
+        <ChevronDown className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
       {open && (
@@ -168,8 +172,10 @@ function UserDropdown({ user, t, handleLogout }) {
   );
 }
 
+// Layout Component
 export default function Layout() {
-  const { user, token, setUser, setToken, loading, siteName, defaultLanguage, theme } = useContext(AppContext);
+  const { user, token, setUser, setToken, loading, siteName, defaultLanguage, theme } =
+    useContext(AppContext);
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -179,21 +185,19 @@ export default function Layout() {
 
   const toggleItem = (id) => setOpenItems((prev) => ({ ...prev, [id]: !prev[id] }));
 
-  useEffect(() => { i18n.changeLanguage(defaultLanguage); }, [defaultLanguage]);
+  useEffect(() => {
+    i18n.changeLanguage(defaultLanguage);
+  }, [defaultLanguage]);
 
   useEffect(() => {
     async function fetchMenu() {
       try {
         const res = await fetch(`${API_URL}/menu-items`, {
-          headers: token
-            ? { Authorization: `Bearer ${token}` }
-            : undefined,
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         });
-
         if (!res.ok) throw new Error("Failed to fetch menu");
-
         const data = await res.json();
-        setMenuItems(data.filter(item => !item.hidden));
+        setMenuItems(data.filter((item) => !item.hidden));
       } catch (err) {
         console.error(err);
         setMenuItems([]);
@@ -201,98 +205,125 @@ export default function Layout() {
         setMenuLoading(false);
       }
     }
-
     fetchMenu();
   }, [token]);
-
 
   async function handleLogout(e) {
     e.preventDefault();
     try {
-      const res = await fetch(`${API_URL}/logout`, { headers: { Authorization: `Bearer ${token}` }, method: "POST" });
+      const res = await fetch(`${API_URL}/logout`, {
+        headers: { Authorization: `Bearer ${token}` },
+        method: "POST",
+      });
       if (res.ok) {
         setUser(null);
         setToken(null);
         localStorage.removeItem("token");
         navigate("/login");
       }
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   if (loading) return <LoadingSpinner />;
 
-  const renderMenu = (items, parentId = null, isMobile = false) =>
-    items
-      .filter(item => item.parent_id === parentId && item.is_active)
-      .map(item => {
-        const children = items.filter(child => child.parent_id === item.id && child.is_active);
-        const label = item.label[i18n.language] || item.label.en;
+  const handleSearch = (query) => {
+    if (query) navigate(`/search?q=${encodeURIComponent(query)}`);
+  };
 
-        if (children.length > 0) {
-          if (isMobile) {
-            return (
-              <div key={item.id} className="flex flex-col">
-                <button
-                  className="flex justify-between items-center px-3 py-2 w-full text-left text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition"
-                  onClick={() => toggleItem(item.id)}
-                >
-                  {label}
-                  <Icons.ChevronDown className={`w-4 h-4 transition-transform ${openItems[item.id] ? "rotate-180" : ""}`} />
-                </button>
-                {openItems[item.id] && (
-                  <div className="pl-4 flex flex-col space-y-1">
-                    {renderMenu(items, item.id, isMobile)}
-                  </div>
-                )}
-              </div>
-            );
-          }
+  // Recursive Menu Renderer
+  // Recursive Menu Renderer
+const renderMenu = (items, parentId = null, isMobile = false) =>
+  items
+    .filter((item) => item.parent_id === parentId && item.is_active)
+    .map((item) => {
+      const children = items.filter((child) => child.parent_id === item.id && child.is_active);
+      const label = item.label[i18n.language] || item.label.en;
 
+      if (children.length > 0) {
+        if (isMobile) {
+          // Mobile: toggle submenus
           return (
-            <div key={item.id} className="relative group">
-              <NavLink
-                to={item.url || "#"}
-                className="px-3 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition flex items-center space-x-1 text-gray-700 dark:text-gray-200"
+            <div key={item.id} className="flex flex-col">
+              <button
+                className="flex justify-between items-center px-3 py-2 w-full text-left text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition"
+                onClick={() => toggleItem(item.id)}
               >
-                <span>{label}</span>
-                <Icons.ChevronDown className="w-3 h-3" />
-              </NavLink>
-              <div className="absolute left-0 hidden group-hover:block bg-white dark:bg-gray-800 shadow-lg rounded mt-1 min-w-[200px] z-50">
-                {renderMenu(items, item.id)}
-              </div>
+                {label}
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform ${openItems[item.id] ? "rotate-180" : ""}`}
+                />
+              </button>
+              {openItems[item.id] && (
+                <div className="pl-4 flex flex-col space-y-1 dark:text-white">
+                  {renderMenu(items, item.id, isMobile)}
+                </div>
+              )}
             </div>
           );
         }
 
+        // Desktop: hover dropdown
         return (
-          <NavLink
-            key={item.id}
-            to={item.url || "#"}
-            className={({ isActive }) =>
-              `px-3 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition ${isActive ? "bg-primary-500 text-white" : "text-gray-700 dark:text-gray-200"}`
-            }
-          >
-            {label}
-          </NavLink>
-        );
-      });
+          <div key={item.id} className="relative group">
+            <NavLink
+              to={item.url || "#"}
+              className="px-3 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition flex items-center space-x-1 text-gray-700 dark:text-gray-200"
+            >
+              <span>{label}</span>
+              <ChevronDown className="w-3 h-3" />
+            </NavLink>
 
-  const handleSearch = (query) => { if (query) navigate(`/search?q=${encodeURIComponent(query)}`); };
+            <div className="absolute left-0 top-full hidden group-hover:block bg-white dark:bg-gray-800 shadow-lg rounded mt-1 min-w-[200px] z-50 border border-gray-200 dark:border-gray-700">
+              {children.map((child) => {
+                const childLabel = child.label[i18n.language] || child.label.en;
+                return (
+                  <NavLink
+                    key={child.id}
+                    to={child.url || "#"}
+                    className="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                  >
+                    {childLabel}
+                  </NavLink>
+                );
+              })}
+            </div>
+          </div>
+        );
+      }
+
+      // No children: regular link
+      return (
+        <NavLink
+          key={item.id}
+          to={item.url || "#"}
+          className={({ isActive }) =>
+            `px-3 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition ${
+              isActive ? "bg-primary-500 text-white" : "text-gray-700 dark:text-gray-200"
+            }`
+          }
+        >
+          {label}
+        </NavLink>
+      );
+    });
+
+
+        
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+      {/* Header */}
       <header className="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-40">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <NavLink to="/" className="flex items-center space-x-2">
-              <img
-                src={theme === "dark" ? "/3.png" : "/4.png"}
-                alt={siteName}
-                className="w-8 h-8"
-              />
+              <img src={theme === "dark" ? "/3.png" : "/4.png"} alt={siteName} className="w-8 h-8" />
               <span className="text-xl font-bold text-gray-900 dark:text-white">{siteName}</span>
             </NavLink>
 
+            {/* Desktop Menu */}
             <div className="hidden md:flex items-center space-x-4">
               {menuLoading ? <LoadingSpinner /> : renderMenu(menuItems)}
               <div className="ml-4">
@@ -300,17 +331,14 @@ export default function Layout() {
               </div>
             </div>
 
+            {/* User & Toggles */}
             <div className="hidden md:flex items-center space-x-3">
               <ThemeToggle />
               <LanguageSwitcher />
-              {!user ? (
-                // <NavLink to="/login" className="primary-btn">{t("login")}</NavLink>
-                <></>
-              ) : (
-                <UserDropdown user={user} t={t} handleLogout={handleLogout} />
-              )}
+              {user && <UserDropdown user={user} t={t} handleLogout={handleLogout} />}
             </div>
 
+            {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="md:hidden p-2 rounded-md text-gray-700 dark:text-gray-200"
@@ -319,6 +347,7 @@ export default function Layout() {
             </button>
           </div>
 
+          {/* Mobile Menu */}
           {mobileMenuOpen && (
             <div className="md:hidden py-4 border-t border-gray-200 dark:border-gray-700">
               <div className="flex flex-col space-y-3">
@@ -330,10 +359,7 @@ export default function Layout() {
                   <ThemeToggle />
                   <LanguageSwitcher />
                 </div>
-                {!user ? (
-                  //<NavLink to="/login" className="primary-btn text-center" onClick={() => setMobileMenuOpen(false)}>{t("login")}</NavLink>
-                  <></>
-                ) : (
+                {user && (
                   <form onSubmit={handleLogout} className="pt-3">
                     <button className="danger-btn w-full">{t("logout")}</button>
                   </form>
@@ -344,10 +370,12 @@ export default function Layout() {
         </nav>
       </header>
 
+      {/* Main */}
       <main className="bg-gray-50 dark:bg-gray-900 transition-colors">
         <Outlet context={{ menuItems, setMenuItems }} />
       </main>
 
+      {/* Footer */}
       <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -360,10 +388,12 @@ export default function Layout() {
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Links</h3>
               <div className="flex flex-col space-y-2">
-                {menuLoading ? <LoadingSpinner /> : menuItems.filter(i => !i.parent_id).map(i => {
-                  const label = i.label[i18n.language] || i.label.en;
-                  return <NavLink key={i.id} to={i.url || "#"} className="hover:underline text-gray-700 dark:text-gray-200">{label}</NavLink>
-                })}
+                {menuLoading
+                  ? <LoadingSpinner />
+                  : menuItems.filter(i => !i.parent_id).map(i => {
+                      const label = i.label[i18n.language] || i.label.en;
+                      return <NavLink key={i.id} to={i.url || "#"} className="hover:underline text-gray-700 dark:text-gray-200">{label}</NavLink>;
+                    })}
               </div>
             </div>
             <div>
@@ -378,10 +408,10 @@ export default function Layout() {
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Follow Us</h3>
               <div className="flex space-x-4 text-gray-600 dark:text-gray-400">
-                <Icons.Facebook className="w-5 h-5 hover:text-blue-600 transition" />
-                <Icons.Twitter className="w-5 h-5 hover:text-blue-400 transition" />
-                <Icons.Instagram className="w-5 h-5 hover:text-pink-500 transition" />
-                <Icons.Linkedin className="w-5 h-5 hover:text-blue-700 transition" />
+                <Facebook className="w-5 h-5 hover:text-blue-600 transition" />
+                <Twitter className="w-5 h-5 hover:text-blue-400 transition" />
+                <Instagram className="w-5 h-5 hover:text-pink-500 transition" />
+                <Linkedin className="w-5 h-5 hover:text-blue-700 transition" />
               </div>
             </div>
           </div>
