@@ -121,6 +121,7 @@ function UserDropdown({ user, t, handleLogout }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+
   const handleLinkClick = () => setOpen(false);
 
   return (
@@ -194,6 +195,19 @@ export default function Layout() {
   useEffect(() => {
     i18n.changeLanguage(defaultLanguage);
   }, [defaultLanguage]);
+  
+  // Add this inside your Layout component
+  useEffect(() => {
+    let timeout;
+    if (subscribeSuccess || subscribeError) {
+      timeout = setTimeout(() => {
+        setSubscribeSuccess(false);
+        setSubscribeError("");
+      }, 3000); // 3000ms = 3 seconds
+    }
+    return () => clearTimeout(timeout);
+  }, [subscribeSuccess, subscribeError]);
+
 
   useEffect(() => {
     async function fetchMenu() {
@@ -301,8 +315,7 @@ export default function Layout() {
             key={item.id}
             to={item.url || "#"}
             className={({ isActive }) =>
-              `px-3 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition ${
-                isActive ? "bg-primary-500 text-white" : "text-gray-700 dark:text-gray-200"
+              `px-3 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition ${isActive ? "bg-primary-500 text-white" : "text-gray-700 dark:text-gray-200"
               }`
             }
           >
@@ -447,9 +460,9 @@ export default function Layout() {
                 {menuLoading
                   ? <LoadingSpinner />
                   : menuItems.filter(i => !i.parent_id).map(i => {
-                      const label = i.label[i18n.language] || i.label.en;
-                      return <NavLink key={i.id} to={i.url || "#"} className="hover:underline text-gray-700 dark:text-gray-200">{label}</NavLink>;
-                    })}
+                    const label = i.label[i18n.language] || i.label.en;
+                    return <NavLink key={i.id} to={i.url || "#"} className="hover:underline text-gray-700 dark:text-gray-200">{label}</NavLink>;
+                  })}
               </div>
             </div>
 
