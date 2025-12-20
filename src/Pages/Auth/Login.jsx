@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import TwoFactorModal from "../../Components/TwoFactorModal";
 import { LogIn, Mail, Lock } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Login() {
   const { setToken } = useContext(AppContext);
@@ -19,15 +19,30 @@ export default function Login() {
   const [userId, setUserId] = useState(null);
 
   const MAX_ATTEMPTS = 5;
-  const COOLDOWN = 60; // 60 seconds
+  const COOLDOWN = 60;
 
-  // Track attempts and lockout per email
-  const [attemptsMap, setAttemptsMap] = useState({});
-  const [lockoutMap, setLockoutMap] = useState({});
+  // 🔒 persisted state
+  const [attemptsMap, setAttemptsMap] = useState(() => {
+    return JSON.parse(localStorage.getItem("login_attempts")) || {};
+  });
+
+  const [lockoutMap, setLockoutMap] = useState(() => {
+    return JSON.parse(localStorage.getItem("login_lockouts")) || {};
+  });
+
   const [timer, setTimer] = useState(0);
   const timerRef = useRef(null);
 
-  // Update timer for current email if it's locked out
+  // persist
+  useEffect(() => {
+    localStorage.setItem("login_attempts", JSON.stringify(attemptsMap));
+  }, [attemptsMap]);
+
+  useEffect(() => {
+    localStorage.setItem("login_lockouts", JSON.stringify(lockoutMap));
+  }, [lockoutMap]);
+
+  // cooldown timer (unchanged UI)
   useEffect(() => {
     clearInterval(timerRef.current);
 
@@ -36,16 +51,20 @@ export default function Login() {
 
     if (lockoutEnd && lockoutEnd > Date.now()) {
       setTimer(Math.ceil((lockoutEnd - Date.now()) / 1000));
+
       timerRef.current = setInterval(() => {
         const remaining = Math.ceil((lockoutEnd - Date.now()) / 1000);
+
         if (remaining <= 0) {
           clearInterval(timerRef.current);
           setTimer(0);
+
           setLockoutMap(prev => {
             const updated = { ...prev };
             delete updated[email];
             return updated;
           });
+
           setAttemptsMap(prev => {
             const updated = { ...prev };
             delete updated[email];
@@ -70,10 +89,13 @@ export default function Login() {
     e.preventDefault();
     const email = formData.email;
 
-    // Check if this email is locked out
     const lockoutEnd = lockoutMap[email];
     if (lockoutEnd && lockoutEnd > Date.now()) {
-      toast.error(`Login disabled for this email. Please wait ${Math.ceil((lockoutEnd - Date.now()) / 1000)} seconds.`);
+      toast.error(
+        `Login disabled for this email. Please wait ${Math.ceil(
+          (lockoutEnd - Date.now()) / 1000
+        )} seconds.`
+      );
       return;
     }
 
@@ -89,14 +111,25 @@ export default function Login() {
 
       if (!res.ok) {
         const currentAttempts = (attemptsMap[email] || 0) + 1;
-        setAttemptsMap({ ...attemptsMap, [email]: currentAttempts });
+
+        setAttemptsMap(prev => ({
+          ...prev,
+          [email]: currentAttempts,
+        }));
 
         if (currentAttempts >= MAX_ATTEMPTS) {
-          const endTime = Date.now() + COOLDOWN * 1000;
-          setLockoutMap({ ...lockoutMap, [email]: endTime });
+          setLockoutMap(prev => ({
+            ...prev,
+            [email]: Date.now() + COOLDOWN * 1000,
+          }));
+
           toast.error("Maximum login attempts reached. Please wait 1 minute.");
         } else {
-          toast.error(`Invalid credentials. Attempts left: ${MAX_ATTEMPTS - currentAttempts}`);
+          toast.error(
+            `Invalid credentials. Attempts left: ${
+              MAX_ATTEMPTS - currentAttempts
+            }`
+          );
         }
 
         setErrors({ general: ["Invalid credentials or unauthorized access."] });
@@ -105,6 +138,19 @@ export default function Login() {
       }
 
       const data = await res.json();
+
+      // ✅ reset attempts on success
+      setAttemptsMap(prev => {
+        const updated = { ...prev };
+        delete updated[email];
+        return updated;
+      });
+
+      setLockoutMap(prev => {
+        const updated = { ...prev };
+        delete updated[email];
+        return updated;
+      });
 
       if (data.requires_2fa) {
         setUserId(data.user_id);
@@ -116,16 +162,13 @@ export default function Login() {
       }
     } catch (error) {
       const currentAttempts = (attemptsMap[email] || 0) + 1;
-      setAttemptsMap({ ...attemptsMap, [email]: currentAttempts });
 
-      if (currentAttempts >= MAX_ATTEMPTS) {
-        const endTime = Date.now() + COOLDOWN * 1000;
-        setLockoutMap({ ...lockoutMap, [email]: endTime });
-        toast.error("Maximum login attempts reached. Please wait 1 minute.");
-      } else {
-        toast.error(`An error occurred. Attempts left: ${MAX_ATTEMPTS - currentAttempts}`);
-      }
+      setAttemptsMap(prev => ({
+        ...prev,
+        [email]: currentAttempts,
+      }));
 
+      toast.error("An error occurred. Please try again.");
       setErrors({ general: ["An error occurred. Please try again."] });
     } finally {
       setLoading(false);
@@ -145,13 +188,14 @@ export default function Login() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 py-12">
       <div className="max-w-md mx-auto">
         <ToastContainer position="top-right" autoClose={5000} />
+
         <div className="card">
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 dark:bg-primary-900 rounded-full mb-4">
               <LogIn className="w-8 h-8 text-primary-600 dark:text-primary-400" />
             </div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              {t('loginTitle')}
+              {t("loginTitle")}
             </h1>
           </div>
 
@@ -159,47 +203,49 @@ export default function Login() {
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 <Mail className="inline w-4 h-4 mr-1" />
-                {t('email')}
+                {t("email")}
               </label>
               <input
                 type="email"
-                placeholder={t('emailPlaceholder')}
+                placeholder={t("emailPlaceholder")}
                 value={formData.email}
                 onChange={handleEmailChange}
                 className="input-field"
                 required
               />
-              {errors.email && <p className="error-text">{errors.email[0]}</p>}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 <Lock className="inline w-4 h-4 mr-1" />
-                {t('password')}
+                {t("password")}
               </label>
               <input
                 type="password"
                 placeholder="••••••••"
                 value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
                 className="input-field"
                 required
               />
-              {errors.password && <p className="error-text">{errors.password[0]}</p>}
 
               <div className="text-right mt-2">
                 <Link
                   to="/forgot-password"
                   className="text-sm text-blue-600 hover:underline dark:text-blue-400"
                 >
-                  {t('forgotPassword')}
+                  {t("forgotPassword")}
                 </Link>
               </div>
             </div>
 
             {errors.general && (
               <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
-                <p className="text-red-600 dark:text-red-400 text-sm">{errors.general[0]}</p>
+                <p className="text-red-600 dark:text-red-400 text-sm">
+                  {errors.general[0]}
+                </p>
               </div>
             )}
 
@@ -208,12 +254,13 @@ export default function Login() {
               disabled={loading || isDisabled}
               className="primary-btn w-full disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? t('loading') : t('login')}
+              {loading ? t("loading") : t("login")}
             </button>
 
             {isDisabled && (
               <p className="text-red-500 text-sm mt-2">
-                Login disabled for this email. Try again in {timer} second{timer > 1 ? 's' : ''}.
+                Login disabled for this email. Try again in {timer} second
+                {timer > 1 ? "s" : ""}.
               </p>
             )}
           </form>
