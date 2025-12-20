@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowRight, Bell, Users, BookOpen } from "lucide-react";
+import Snowfall from "react-snowfall";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -76,6 +77,7 @@ export default function Home() {
   return (
     <div className="space-y-12">
       {/* Hero Section with Carousel */}
+
       <section
         className="relative overflow-hidden h-[650px] md:h-[650px]"
         style={{
@@ -110,7 +112,7 @@ export default function Home() {
         </div>
       </section>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 py-12">
-
+        <Snowfall color="white" />
         {/* Vision, Mission, Goals */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[

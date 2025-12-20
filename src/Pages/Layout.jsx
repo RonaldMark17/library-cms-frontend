@@ -16,6 +16,7 @@ import {
   Linkedin,
 } from "lucide-react";
 import LoadingSpinner from "../Components/LoadingSpinner";
+import Snowfall from "react-snowfall";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -126,6 +127,7 @@ function UserDropdown({ user, t, handleLogout }) {
 
   return (
     <div className="relative" ref={dropdownRef}>
+      
       <button
         onClick={() => setOpen(!open)}
         className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition"
@@ -326,6 +328,7 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+      <Snowfall color="white"/>
       {/* Header */}
       <header className="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-40">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
